@@ -1,0 +1,141 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text=""
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center_vertical"
+            android:text="视频名称"
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center_vertical"
+            android:text="上传时间"
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center_vertical"
+            android:text="大小"
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="操作"
+            android:textColor="@android:color/black"
+            android:textSize="15dp" />
+
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/content_page"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:gravity="right"
+            android:orientation="horizontal"
+            android:paddingBottom="6dp"
+            android:paddingRight="6dp"
+            android:paddingTop="6dp">
+
+            <TextView
+                android:id="@+id/content_page_total"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="8dp"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:gravity="center_vertical"
+                android:text="@string/app_name"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="15dp" />
+
+            <Button
+                android:id="@+id/content_page_last"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/white_background_button"
+                android:padding="4dp"
+                android:text="@string/last_button"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+            <Button
+                android:id="@+id/content_page_num"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:background="@drawable/blue_background_button"
+                android:padding="4dp"
+                android:text="1"
+                android:textColor="@android:color/white"
+                android:textSize="15dp" />
+
+            <Button
+                android:id="@+id/content_page_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/white_background_button"
+                android:padding="4dp"
+                android:text="@string/next_button"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/content_view_load_data"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_above="@id/content_page"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="48dp" />
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/content_view_paper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/content_page"
+            android:background="@android:color/white" />
+    </RelativeLayout>
+
+</LinearLayout>
