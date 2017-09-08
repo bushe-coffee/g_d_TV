@@ -2,11 +2,10 @@ package com.guangdian.aivideo;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -22,10 +21,9 @@ import com.guangdian.aivideo.utils.YiPlusUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ContentActivity extends AppCompatActivity implements View.OnClickListener {
+public class ContentActivity extends FragmentActivity implements View.OnClickListener {
 
     private Button mButtonLast;
     private Button mButtonNext;
@@ -54,34 +52,37 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
         mButtonNext.setOnClickListener(this);
         mButtonNum.setText(mCurrentPage + "");
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         String time = (System.currentTimeMillis() / 1000) + "";
         String data = YiPlusUtilities.getPostParams(time);
-
+        System.out.println("Yi Plus  onResume  ");
         NetWorkUtils.post(YiPlusUtilities.LIST_URL, data, null, new NetWorkCallback() {
             @Override
             public void onServerResponse(Bundle result) {
                 try {
                     String res = (String) result.get("result");
+                    System.out.println("Yi Plus  list Result  " + res);
                     if (!YiPlusUtilities.isStringNullOrEmpty(res)) {
                         JSONArray array = new JSONArray(res);
                         VideoListModel model = new VideoListModel(array);
-                        mListVideos = new ArrayList<VideoModel>();
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
-                        mListVideos.addAll(model.getVideoList());
+                        mListVideos = model.getVideoList();
                         if (mListVideos != null) {
                             mTotalPages = getPagesTotal(mListVideos.size());
-                            mTextTotal.setText("共 " + mTotalPages + " 页");
-
-                            CustomerPagerAdapter pagerAdapter = new CustomerPagerAdapter(getSupportFragmentManager());
-                            mViewPaper.setAdapter(pagerAdapter);
-                            mLoading.setVisibility(View.GONE);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mTextTotal.setText("共 " + mTotalPages + " 页");
+                                    CustomerPagerAdapter pagerAdapter = new CustomerPagerAdapter(getSupportFragmentManager());
+                                    mViewPaper.setAdapter(pagerAdapter);
+                                    pagerAdapter.notifyDataSetChanged();
+                                    System.out.println("Yi plus   " + "共 " + mTotalPages + " 页");
+                                    mLoading.setVisibility(View.GONE);
+                                }
+                            });
                         }
 
                     }
@@ -146,6 +147,7 @@ public class ContentActivity extends AppCompatActivity implements View.OnClickLi
             if (last > mListVideos.size()) last = mListVideos.size();
             List<VideoModel> videoList = mListVideos.subList(start, last);
             fragment.setData(videoList);
+            System.out.println("Yi plus   fragment   " + mListVideos.size());
 
             return fragment;
         }

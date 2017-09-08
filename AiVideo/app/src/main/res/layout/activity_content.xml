@@ -1,7 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:padding="18dp"
+    android:background="#88EEFFFF"
     android:orientation="vertical">
 
     <LinearLayout
@@ -122,6 +123,13 @@
 
         </LinearLayout>
 
+        <android.support.v4.view.ViewPager
+            android:id="@+id/content_view_paper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/content_page"
+            android:background="@android:color/white" />
+
         <ProgressBar
             android:id="@+id/content_view_load_data"
             android:layout_width="64dp"
@@ -130,12 +138,6 @@
             android:layout_centerInParent="true"
             android:layout_marginBottom="48dp" />
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/content_view_paper"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@id/content_page"
-            android:background="@android:color/white" />
     </RelativeLayout>
 
 </LinearLayout>

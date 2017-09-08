@@ -37,9 +37,6 @@ public class VideoListFragment extends Fragment {
 
     public void setData(List<VideoModel> videoList) {
         this.mDatas = videoList;
-        if (mRecycleView != null && mAdapter != null && mDatas!= null) {
-            mAdapter.notifyDataSetChanged();
-        }
     }
 
     @Nullable
@@ -47,14 +44,19 @@ public class VideoListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_video_list, container, false);
         mRecycleView = view.findViewById(R.id.content_list);
+
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         mRecycleView.setLayoutManager(manager);
         mRecycleView.setLayoutFrozen(false);
         mAdapter = new CustomerAdapter();
         mRecycleView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
-
-        return view;
     }
 
     private class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.RecycleHolder> implements View.OnClickListener {

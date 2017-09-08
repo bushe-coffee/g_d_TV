@@ -14,11 +14,6 @@ import java.net.URL;
 
 public class NetWorkUtils {
 
-
-    public static void get(final String address, final NetWorkCallback callback) {
-        get(address, null, callback);
-    }
-
     public static void get(final String address, final String userAgent, final NetWorkCallback callback) {
         new Thread(new Runnable() {
             public void run() {
@@ -99,11 +94,14 @@ public class NetWorkUtils {
 
                     if (callback != null) {
                         result.putString("result", sb.toString());
+                        System.out.println("Yi plus successful");
                         callback.onServerResponse(result);
                     }
                 } catch (Exception e) {
                     if (callback != null) {
                         result.putString("result", null);
+                        e.printStackTrace();
+                        System.out.println("Yi plus error  " + e.getMessage());
                         callback.onServerResponse(result);
                     }
                 } finally {

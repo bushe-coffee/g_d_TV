@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
@@ -107,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
-            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_DPAD_CENTER:
                 if (mIsPlaying) {
                     mVideoView.pause();
                     mIsPlaying = false;
@@ -116,25 +117,27 @@ public class MainActivity extends AppCompatActivity {
                     mIsPlaying = true;
                 }
                 break;
-            case KeyEvent.KEYCODE_F9:
+            case KeyEvent.KEYCODE_MENU:
                 analysisImage();
                 break;
-            case KeyEvent.KEYCODE_ESCAPE:
+            case KeyEvent.META_SYM_ON:
+                // 返回 键，
                 if (mIsShowRelate) {
                     mIsShowRelate = false;
                     mAIContent.setVisibility(View.GONE);
+                    return true;
                 } else {
                     this.finish();
                 }
                 break;
         }
 
-        System.out.println("yijia   222222   " + keyCode);
-        return true;
+        System.out.println("Yi plus   222222   " + keyCode);
+        return super.onKeyDown(keyCode, event);
     }
 
 
-    private class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleHolder> {
+    private class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleHolder> implements View.OnClickListener {
 
         private List<CommendModel> mDatas;
 
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(RecycleAdapter.RecycleHolder holder, int position) {
-            if (holder != null && mDatas!=null && position < mDatas.size()) {
+            if (holder != null && mDatas != null && position < mDatas.size()) {
                 CommendModel model = mDatas.get(position);
                 holder.mAdsContainer.setVisibility(View.GONE);
                 holder.mContainer.setVisibility(View.GONE);
@@ -165,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
                         holder.mAdsContainer.setVisibility(View.VISIBLE);
                         ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.mAds);
                     }
+
+                    holder.mParentContainer.setTag(model.getCast());
+                    holder.mParentContainer.setOnClickListener(this);
                 }
             }
         }
@@ -174,14 +180,21 @@ public class MainActivity extends AppCompatActivity {
             return mDatas.size();
         }
 
+        @Override
+        public void onClick(View view) {
+            String cast = (String) view.getTag();
+
+        }
+
         class RecycleHolder extends RecyclerView.ViewHolder {
 
             private TextView mTitle;
             private TextView mContent;
-            private ImageView mImage;
+            private ImageButton mImage;
             private ImageView mAds;
             private LinearLayout mContainer;
             private LinearLayout mAdsContainer;
+            private LinearLayout mParentContainer;
 
             public RecycleHolder(View itemView) {
                 super(itemView);
@@ -192,6 +205,8 @@ public class MainActivity extends AppCompatActivity {
                 mAds = itemView.findViewById(R.id.item_content_ads_image);
                 mContainer = itemView.findViewById(R.id.item_content_container);
                 mAdsContainer = itemView.findViewById(R.id.item_content_ads);
+
+                mParentContainer = itemView.findViewById(R.id.item_content);
             }
         }
     }
@@ -219,8 +234,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVideoView() {
         mVideoView.setVideoURI(Uri.parse(mUrl));
-        mController = new MediaController(this);
-        mVideoView.setMediaController(mController);
 
         // 监听视频装载完成的事件
         mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -264,29 +277,32 @@ public class MainActivity extends AppCompatActivity {
         AssetManager assetManager = getAssets();
         InputStream is = null;
         try {
-            is = assetManager.open("test2.jpg");
+            is = assetManager.open("test3.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         String time = (System.currentTimeMillis() / 1000) + "";
         String data = YiPlusUtilities.getPostParams(time);
+
         String base64Image = YiPlusUtilities.bitmapToBase64(bitmap);
+        System.out.println("Yi Plus " + base64Image);
 //        String image = base64Image.replace("^data:image/[a-z]+;base64,/", "");
         String image = base64Image.replace("^data:image/[^;]*;base64,?", "");
+        System.out.println("Yi Plus Image " + image);
         String param = data + "&image=" + image;
         NetWorkUtils.post(YiPlusUtilities.ANALYSIS_IMAGE_URL, param, null, new NetWorkCallback() {
             @Override
             public void onServerResponse(Bundle result) {
                 try {
                     String res = (String) result.get("result");
-                    System.out.println(res);
+                    System.out.println("Yi Plus Image result " + res);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             mAIContent.setVisibility(View.VISIBLE);
                             mIsShowRelate = true;
-                            mRecycleView.requestFocus();
+
                         }
                     });
                 } catch (Exception e) {
