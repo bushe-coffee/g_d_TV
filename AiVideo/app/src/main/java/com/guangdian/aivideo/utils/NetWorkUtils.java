@@ -4,12 +4,16 @@ import android.os.Bundle;
 
 import com.guangdian.aivideo.NetWorkCallback;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 
 public class NetWorkUtils {
@@ -68,6 +72,7 @@ public class NetWorkUtils {
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setDoOutput(true);
                     connection.setDoInput(true);
+                    connection.setUseCaches(false);
                     connection.setRequestMethod("POST");
 
                     if (!YiPlusUtilities.isStringNullOrEmpty(contentType)) {
@@ -75,9 +80,10 @@ public class NetWorkUtils {
                     }
 
                     if (data != null && data.length() > 0) {
-                        OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
+                        OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
                         wr.write(data);
                         wr.flush();
+                        wr.close();
                     }
 
                     StringBuilder sb = new StringBuilder();

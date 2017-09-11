@@ -1,11 +1,6 @@
 package com.guangdian.aivideo;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -25,18 +20,26 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.guangdian.aivideo.models.AnalysisResultModel;
+import com.guangdian.aivideo.models.CategoriesModel;
 import com.guangdian.aivideo.models.CommendListModel;
 import com.guangdian.aivideo.models.CommendModel;
+import com.guangdian.aivideo.models.FacesModel;
+import com.guangdian.aivideo.models.ScenesModel;
 import com.guangdian.aivideo.utils.NetWorkUtils;
 import com.guangdian.aivideo.utils.YiPlusUtilities;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +48,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecycleView;
     private RelativeLayout mAIContent;
     private String mUrl;
-    private CommendListModel mListModels;
+    private List<CommendModel> mAllmModels;
+    private List<CommendModel> mCurrentModels = new ArrayList<>();
+    private AnalysisResultModel mAnalysisResultModel;
+    private RecycleAdapter mAdapter;
 
     private boolean mIsPlaying = false;
     private int mVideoTotal = 0;
@@ -77,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         requestRelateData();
+        analysisImage();
         if (mVideoView != null && !mIsPlaying && !mVideoView.isPlaying()) {
             if (mPlayPostion > 0) {
                 mVideoView.start();
@@ -140,6 +147,17 @@ public class MainActivity extends AppCompatActivity {
     private class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleHolder> implements View.OnClickListener {
 
         private List<CommendModel> mDatas;
+
+        public void setDatas(List<CommendModel> datas) {
+            if (mDatas != null) {
+                mDatas.clear();
+                mDatas.addAll(datas);
+            } else {
+                this.mDatas = datas;
+            }
+
+            notifyDataSetChanged();
+        }
 
         RecycleAdapter(List<CommendModel> models) {
             mDatas = models;
@@ -221,9 +239,10 @@ public class MainActivity extends AppCompatActivity {
                     String res = (String) result.get("result");
                     if (!YiPlusUtilities.isStringNullOrEmpty(res)) {
                         JSONArray array = new JSONArray(res);
-                        mListModels = new CommendListModel(array);
-                        RecycleAdapter adapter = new RecycleAdapter(mListModels.getModels());
-                        mRecycleView.setAdapter(adapter);
+                        CommendListModel allModels = new CommendListModel(array);
+                        mAllmModels = allModels.getModels();
+                        mAdapter = new RecycleAdapter(mAllmModels);
+                        mRecycleView.setAdapter(mAdapter);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -274,29 +293,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void analysisImage() {
-        AssetManager assetManager = getAssets();
-        InputStream is = null;
-        try {
-            is = assetManager.open("test3.jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Bitmap bitmap = BitmapFactory.decodeStream(is);
+
         String time = (System.currentTimeMillis() / 1000) + "";
         String data = YiPlusUtilities.getPostParams(time);
 
-        String base64Image = YiPlusUtilities.bitmapToBase64(bitmap);
-        System.out.println("Yi Plus " + base64Image);
-//        String image = base64Image.replace("^data:image/[a-z]+;base64,/", "");
-        String image = base64Image.replace("^data:image/[^;]*;base64,?", "");
-        System.out.println("Yi Plus Image " + image);
-        String param = data + "&image=" + image;
+        String base64Image = YiPlusUtilities.bitmapToBase64(this);
+        System.out.println("Yi Plus Image " + base64Image);
+        String param = null;
+        try {
+            // base64 得到的 URL 在网络请求过程中 会出现 + 变 空格 的现象。 在 设置 base64 的字符串 之前 进行 格式化
+            param = data + "&image=" + URLEncoder.encode(base64Image, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
         NetWorkUtils.post(YiPlusUtilities.ANALYSIS_IMAGE_URL, param, null, new NetWorkCallback() {
             @Override
             public void onServerResponse(Bundle result) {
                 try {
                     String res = (String) result.get("result");
-                    System.out.println("Yi Plus Image result " + res);
+                    JSONObject object = new JSONObject(res);
+                    mAnalysisResultModel = new AnalysisResultModel(object);
+
+                    SelectRightResult();
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -310,5 +330,38 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void SelectRightResult() {
+        if (mCurrentModels != null) {
+            mCurrentModels.clear();
+        }
+
+        if (mAnalysisResultModel != null) {
+            Set<String> set = new HashSet<>();
+            List<ScenesModel> sceneList = mAnalysisResultModel.getSceneList();
+            List<CategoriesModel> categoriesList = mAnalysisResultModel.getCategoriesList();
+            FacesModel faces = mAnalysisResultModel.getFaces();
+            for (int i = 0; sceneList != null && i < sceneList.size(); ++i) {
+                set.add(sceneList.get(i).getScene_name());
+
+            }
+            for (int i = 0; categoriesList != null && i < categoriesList.size(); ++i) {
+                set.add(categoriesList.get(i).getCategory_name());
+            }
+            for (int i = 0; faces != null && i < faces.getFace_counts(); ++i) {
+                set.add(faces.getFace_attribute().get(i).getStar_name());
+            }
+
+            for (int i = 0; mAllmModels != null && i < mAllmModels.size(); ++i) {
+                if (set.contains(mAllmModels.get(i).getProject_name())) {
+                    mCurrentModels.add(mAllmModels.get(i));
+                }
+            }
+
+            mAdapter.setDatas(mCurrentModels);
+        } else {
+
+        }
     }
 }

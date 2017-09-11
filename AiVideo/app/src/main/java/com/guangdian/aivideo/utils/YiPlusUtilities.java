@@ -1,12 +1,18 @@
 package com.guangdian.aivideo.utils;
 
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 public class YiPlusUtilities {
@@ -84,25 +90,35 @@ public class YiPlusUtilities {
         return data;
     }
 
-    public static String bitmapToBase64(Bitmap bitmap) {
-
+    public static String bitmapToBase64(Context context) {
         String result = null;
+        AssetManager assetManager = context.getAssets();
+        InputStream is = null;
+        try {
+            is = assetManager.open("test3.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bitmap = BitmapFactory.decodeStream(is);
+
         ByteArrayOutputStream baos = null;
         try {
             if (bitmap != null) {
                 baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
 
                 baos.flush();
                 baos.close();
 
                 byte[] bitmapBytes = baos.toByteArray();
-                result = Base64.encodeToString(bitmapBytes, Base64.DEFAULT);
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
+
                 if (baos != null) {
                     baos.flush();
                     baos.close();
