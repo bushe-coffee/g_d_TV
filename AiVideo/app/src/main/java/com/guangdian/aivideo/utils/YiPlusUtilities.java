@@ -1,12 +1,15 @@
 package com.guangdian.aivideo.utils;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 import android.util.Base64;
+import android.util.DisplayMetrics;
+import android.view.Display;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -95,7 +98,7 @@ public class YiPlusUtilities {
         AssetManager assetManager = context.getAssets();
         InputStream is = null;
         try {
-            is = assetManager.open("test3.jpg");
+            is = assetManager.open("test4.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -106,7 +109,7 @@ public class YiPlusUtilities {
         try {
             if (bitmap != null) {
                 baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
                 baos.flush();
                 baos.close();
@@ -118,7 +121,6 @@ public class YiPlusUtilities {
             e.printStackTrace();
         } finally {
             try {
-
                 if (baos != null) {
                     baos.flush();
                     baos.close();
@@ -129,5 +131,19 @@ public class YiPlusUtilities {
         }
 
         return result;
+    }
+
+    public static int getScreenWidth(Activity activity) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        return metrics.widthPixels;
+    }
+
+    public static int getScreenHeight(Activity activity) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        return metrics.heightPixels;
     }
 }

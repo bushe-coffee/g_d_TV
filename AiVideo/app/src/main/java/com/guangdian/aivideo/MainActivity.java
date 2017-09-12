@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,6 +19,7 @@ import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.guangdian.aivideo.models.AnalysisResultModel;
@@ -37,21 +39,34 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private ProgressBar mProgress;
+    private ProgressBar mListProgress;
     private VideoView mVideoView;
     private RecyclerView mRecycleView;
     private RelativeLayout mAIContent;
     private String mUrl;
+
+
     private List<CommendModel> mAllmModels;
     private List<CommendModel> mCurrentModels = new ArrayList<>();
     private AnalysisResultModel mAnalysisResultModel;
     private RecycleAdapter mAdapter;
+    private int mBaidu = 0;
+    private int mWeibo = 0;
+    private int mVideo = 0;
+    private int mDouban = 0;
+    private int mTaobao = 0;
+    private final String BAIDU = "百度百科";
+    private final String WEIBO = "微博";
+    private final String VIDEO = "点播视频";
+    private final String DOUBAN = "豆瓣";
+    private final String TAOBAO = "商品";
 
     private boolean mIsPlaying = false;
     private int mVideoTotal = 0;
@@ -72,8 +87,17 @@ public class MainActivity extends AppCompatActivity {
         mVideoView = (VideoView) findViewById(R.id.main_video);
         mRecycleView = (RecyclerView) findViewById(R.id.main_relate);
         mAIContent = (RelativeLayout) findViewById(R.id.main_ai_content);
+
+        int margin = YiPlusUtilities.getScreenHeight(this) / 6;
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mAIContent.getLayoutParams();
+        params.bottomMargin = margin;
+        params.topMargin = margin;
+        mAIContent.setLayoutParams(params);
+
         mProgress = (ProgressBar) findViewById(R.id.main_load_progress);
+        mListProgress = (ProgressBar) findViewById(R.id.main_load_list_progress);
         mProgress.setVisibility(View.VISIBLE);
+        mListProgress.setVisibility(View.GONE);
 
         mRecycleView.setLayoutManager(new LinearLayoutManager(this));
         initVideoView();
@@ -83,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         requestRelateData();
-        analysisImage();
+
         if (mVideoView != null && !mIsPlaying && !mVideoView.isPlaying()) {
             if (mPlayPostion > 0) {
                 mVideoView.start();
@@ -131,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
                 // 返回 键，
                 if (mIsShowRelate) {
                     mIsShowRelate = false;
+                    clearData();
+                    mAdapter.notifyDataSetChanged();
                     mAIContent.setVisibility(View.GONE);
                     return true;
                 } else {
@@ -143,30 +169,29 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    public void recycleClick(View view) {
+        Toast.makeText(MainActivity.this, "hello  ", Toast.LENGTH_SHORT).show();
+    }
 
-    private class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleHolder> implements View.OnClickListener {
+    private class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleHolder> {
 
         private List<CommendModel> mDatas;
 
-        public void setDatas(List<CommendModel> datas) {
-            if (mDatas != null) {
-                mDatas.clear();
-                mDatas.addAll(datas);
-            } else {
-                this.mDatas = datas;
-            }
-
-            notifyDataSetChanged();
+        void setDatas(List<CommendModel> datas) {
+            mDatas.clear();
+            mDatas.addAll(datas);
+            this.notifyDataSetChanged();
         }
 
-        RecycleAdapter(List<CommendModel> models) {
-            mDatas = models;
+        RecycleAdapter() {
+            mDatas = new ArrayList<>();
         }
 
         @Override
         public RecycleAdapter.RecycleHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.item_content, parent, false);
             RecycleHolder holder = new RecycleHolder(view);
+
             return holder;
         }
 
@@ -177,18 +202,24 @@ public class MainActivity extends AppCompatActivity {
                 holder.mAdsContainer.setVisibility(View.GONE);
                 holder.mContainer.setVisibility(View.GONE);
                 if (model != null) {
-                    if (!model.getData_source().equals("商品")) {
+                    if (!TAOBAO.equals(model.getData_source())) {
                         holder.mContainer.setVisibility(View.VISIBLE);
                         holder.mTitle.setText(model.getDetailed_title());
                         holder.mContent.setText(model.getDisplay_brief());
                         ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.mImage);
+                        if (BAIDU.equals(model.getData_source())) {
+                            holder.mContainer.setBackgroundResource(R.drawable.baidu_bj);
+                        } else if (DOUBAN.equals(model.getData_source())) {
+                            holder.mContainer.setBackgroundResource(R.drawable.douban_bj);
+                        } else if (WEIBO.equals(model.getData_source())) {
+                            holder.mContainer.setBackgroundResource(R.drawable.weibo_bj);
+                        } else if (VIDEO.equals(model.getData_source())) {
+                            holder.mContainer.setBackgroundResource(R.drawable.video_dianbo_bj);
+                        }
                     } else {
                         holder.mAdsContainer.setVisibility(View.VISIBLE);
                         ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.mAds);
                     }
-
-                    holder.mParentContainer.setTag(model.getCast());
-                    holder.mParentContainer.setOnClickListener(this);
                 }
             }
         }
@@ -198,23 +229,17 @@ public class MainActivity extends AppCompatActivity {
             return mDatas.size();
         }
 
-        @Override
-        public void onClick(View view) {
-            String cast = (String) view.getTag();
-
-        }
-
         class RecycleHolder extends RecyclerView.ViewHolder {
 
             private TextView mTitle;
             private TextView mContent;
-            private ImageButton mImage;
+            private ImageView mImage;
             private ImageView mAds;
             private LinearLayout mContainer;
             private LinearLayout mAdsContainer;
-            private LinearLayout mParentContainer;
+            private Button mBackGroundButton;
 
-            public RecycleHolder(View itemView) {
+            RecycleHolder(View itemView) {
                 super(itemView);
                 mTitle = itemView.findViewById(R.id.item_content_container_title);
                 mContent = itemView.findViewById(R.id.item_content_container_content);
@@ -224,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 mContainer = itemView.findViewById(R.id.item_content_container);
                 mAdsContainer = itemView.findViewById(R.id.item_content_ads);
 
-                mParentContainer = itemView.findViewById(R.id.item_content);
+                mBackGroundButton = itemView.findViewById(R.id.item_background_button);
             }
         }
     }
@@ -241,8 +266,17 @@ public class MainActivity extends AppCompatActivity {
                         JSONArray array = new JSONArray(res);
                         CommendListModel allModels = new CommendListModel(array);
                         mAllmModels = allModels.getModels();
-                        mAdapter = new RecycleAdapter(mAllmModels);
-                        mRecycleView.setAdapter(mAdapter);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapter = new RecycleAdapter();
+                                mRecycleView.setAdapter(mAdapter);
+
+                                analysisImage();
+                            }
+                        });
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -294,6 +328,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void analysisImage() {
 
+        // set ai content is visiable
+        mAIContent.setVisibility(View.VISIBLE);
+        mIsShowRelate = true;
+        mListProgress.setVisibility(View.VISIBLE);
+
         String time = (System.currentTimeMillis() / 1000) + "";
         String data = YiPlusUtilities.getPostParams(time);
 
@@ -315,16 +354,13 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject object = new JSONObject(res);
                     mAnalysisResultModel = new AnalysisResultModel(object);
 
-                    SelectRightResult();
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mAIContent.setVisibility(View.VISIBLE);
-                            mIsShowRelate = true;
-
+                            SelectRightResult();
                         }
                     });
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -333,35 +369,146 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SelectRightResult() {
+        clearData();
+
+        // Show analysis result
+        if (mAnalysisResultModel != null) {
+
+            Map<String, List<String>> map = handleAnalysisResult();
+            if (map == null || map.isEmpty()) {
+                getShowResultForAnalysis(false);
+                mAdapter.setDatas(mCurrentModels);
+
+                return;
+            }
+
+            // match analysis result and all data collections
+            for (int i = 0; mAllmModels != null && i < mAllmModels.size(); ++i) {
+                CommendModel model = mAllmModels.get(i);
+                if ("商品".equals(model.getData_source())) {
+                    List<String> shang = map.get("商品");
+                    for (int j = 0; shang != null && j < shang.size(); ++j) {
+                        if (shang.get(j).equals(model.getTag_name())) {
+                            mCurrentModels.add(model);
+                            mTaobao++;
+                        }
+                    }
+                } else {
+                    List<String> people = map.get("人物");
+                    for (int j = 0; people != null && j < people.size(); ++j) {
+                        if (people.get(j).equals(model.getTag_name())) {
+                            mCurrentModels.add(model);
+                            if (BAIDU.equals(model.getData_source())) {
+                                mBaidu++;
+                            }
+
+                            if (DOUBAN.equals(model.getData_source())) {
+                                mDouban++;
+                            }
+
+                            if (VIDEO.equals(model.getData_source())) {
+                                mVideo++;
+                            }
+
+                            if (WEIBO.equals(model.getData_source())) {
+                                mWeibo++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            getShowResultForAnalysis(mCurrentModels.size() > 0);
+            mListProgress.setVisibility(View.GONE);
+            mAdapter.setDatas(mCurrentModels);
+        } else {
+            getShowResultForAnalysis(false);
+            mAdapter.setDatas(mCurrentModels);
+        }
+    }
+
+    private Map<String, List<String>> handleAnalysisResult() {
+        Map<String, List<String>> map = new HashMap<>();
+        List<ScenesModel> sceneList = mAnalysisResultModel.getSceneList();
+        List<CategoriesModel> categoriesList = mAnalysisResultModel.getCategoriesList();
+        FacesModel faces = mAnalysisResultModel.getFaces();
+        for (int i = 0; sceneList != null && i < sceneList.size(); ++i) {
+            if (map.containsKey("商品")) {
+                map.get("商品").add(sceneList.get(i).getScene_name());
+            } else {
+                List<String> taobao = new ArrayList<>();
+                taobao.add(sceneList.get(i).getScene_name());
+                map.put("商品", taobao);
+            }
+        }
+        for (int i = 0; categoriesList != null && i < categoriesList.size(); ++i) {
+            if (map.containsKey("商品")) {
+                map.get("商品").add(categoriesList.get(i).getCategory_name());
+            } else {
+                List<String> taobao = new ArrayList<>();
+                taobao.add(categoriesList.get(i).getCategory_name());
+                map.put("商品", taobao);
+            }
+        }
+        for (int i = 0; faces != null && i < faces.getFace_counts(); ++i) {
+            if (map.containsKey("人物")) {
+                map.get("人物").add(faces.getFace_attribute().get(i).getStar_name());
+            } else {
+                List<String> person = new ArrayList<>();
+                person.add(faces.getFace_attribute().get(i).getStar_name());
+                map.put("人物", person);
+            }
+        }
+
+        return map;
+    }
+
+    private void getShowResultForAnalysis(boolean hasResult) {
+        if (!hasResult) {
+            clearData();
+        }
+
+        for (CommendModel model : mAllmModels) {
+            if (model.getDetailed_image_url().length() < 8) {
+                continue;
+            }
+
+            if (BAIDU.equals(model.getData_source()) && mBaidu == 0) {
+                mCurrentModels.add(model);
+                mBaidu++;
+            }
+
+            if (DOUBAN.equals(model.getData_source()) && mDouban == 0) {
+                mCurrentModels.add(model);
+                mDouban++;
+            }
+
+            if (VIDEO.equals(model.getData_source()) && mVideo < 2) {
+                mCurrentModels.add(model);
+                mVideo++;
+            }
+
+            if (TAOBAO.equals(model.getData_source()) && mTaobao == 0) {
+                mCurrentModels.add(model);
+                mTaobao++;
+            }
+
+            if (WEIBO.equals(model.getData_source()) && mWeibo == 0) {
+                mCurrentModels.add(model);
+                mWeibo++;
+            }
+        }
+    }
+
+    private void clearData() {
         if (mCurrentModels != null) {
             mCurrentModels.clear();
         }
 
-        if (mAnalysisResultModel != null) {
-            Set<String> set = new HashSet<>();
-            List<ScenesModel> sceneList = mAnalysisResultModel.getSceneList();
-            List<CategoriesModel> categoriesList = mAnalysisResultModel.getCategoriesList();
-            FacesModel faces = mAnalysisResultModel.getFaces();
-            for (int i = 0; sceneList != null && i < sceneList.size(); ++i) {
-                set.add(sceneList.get(i).getScene_name());
-
-            }
-            for (int i = 0; categoriesList != null && i < categoriesList.size(); ++i) {
-                set.add(categoriesList.get(i).getCategory_name());
-            }
-            for (int i = 0; faces != null && i < faces.getFace_counts(); ++i) {
-                set.add(faces.getFace_attribute().get(i).getStar_name());
-            }
-
-            for (int i = 0; mAllmModels != null && i < mAllmModels.size(); ++i) {
-                if (set.contains(mAllmModels.get(i).getProject_name())) {
-                    mCurrentModels.add(mAllmModels.get(i));
-                }
-            }
-
-            mAdapter.setDatas(mCurrentModels);
-        } else {
-
-        }
+        mBaidu = 0;
+        mWeibo = 0;
+        mVideo = 0;
+        mDouban = 0;
+        mTaobao = 0;
     }
 }
