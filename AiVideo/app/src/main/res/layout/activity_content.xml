@@ -3,7 +3,10 @@
     android:layout_height="match_parent"
     android:background="@drawable/bj"
     android:orientation="vertical"
-    android:padding="18dp">
+    android:paddingLeft="68dp"
+    android:paddingBottom="128dp"
+    android:paddingTop="128dp"
+    android:paddingRight="68dp" >
 
     <LinearLayout
         android:layout_width="match_parent"

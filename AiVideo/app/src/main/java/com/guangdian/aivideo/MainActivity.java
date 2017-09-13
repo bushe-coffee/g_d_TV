@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private RelativeLayout mAIContent;
     private String mUrl;
 
-
+    private CommendListModel allModels;
     private List<CommendModel> mAllmModels;
     private List<CommendModel> mCurrentModels = new ArrayList<>();
     private AnalysisResultModel mAnalysisResultModel;
@@ -264,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                     String res = (String) result.get("result");
                     if (!YiPlusUtilities.isStringNullOrEmpty(res)) {
                         JSONArray array = new JSONArray(res);
-                        CommendListModel allModels = new CommendListModel(array);
+                        allModels = new CommendListModel(array);
                         mAllmModels = allModels.getModels();
 
                         runOnUiThread(new Runnable() {
@@ -351,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
             public void onServerResponse(Bundle result) {
                 try {
                     String res = (String) result.get("result");
+                    System.out.println("Yi plus result  " +res);
+
                     JSONObject object = new JSONObject(res);
                     mAnalysisResultModel = new AnalysisResultModel(object);
 
@@ -464,8 +467,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getShowResultForAnalysis(boolean hasResult) {
+        int bd=0, wb=0,db=0,dbsp=0,tb=0;
         if (!hasResult) {
             clearData();
+            // 全部 随机
+            Random baiduR = new Random();
+            bd = baiduR.nextInt(allModels.getBaiduNum()-1);
+            Random weiboR = new Random();
+            wb = weiboR.nextInt(allModels.getWeiboNum()-1);
+            Random doubanR = new Random();
+            db = doubanR.nextInt(allModels.getDoubanNum()-1);
+            Random dianboR = new Random();
+            dbsp = dianboR.nextInt(allModels.getDianboNum()-1);
+            Random taobaoR = new Random();
+            tb = taobaoR.nextInt(allModels.getTaobaoNum()-1);
         }
 
         for (CommendModel model : mAllmModels) {
@@ -473,28 +488,38 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
 
-            if (BAIDU.equals(model.getData_source()) && mBaidu == 0) {
-                mCurrentModels.add(model);
+            if (BAIDU.equals(model.getData_source())) {
+                if (mBaidu == bd) {
+                    mCurrentModels.add(model);
+                }
                 mBaidu++;
             }
 
-            if (DOUBAN.equals(model.getData_source()) && mDouban == 0) {
-                mCurrentModels.add(model);
+            if (DOUBAN.equals(model.getData_source())) {
+                if (mDouban == db) {
+                    mCurrentModels.add(model);
+                }
                 mDouban++;
             }
 
-            if (VIDEO.equals(model.getData_source()) && mVideo < 2) {
-                mCurrentModels.add(model);
+            if (VIDEO.equals(model.getData_source())) {
+                if (dbsp == mVideo) {
+                    mCurrentModels.add(model);
+                }
                 mVideo++;
             }
 
-            if (TAOBAO.equals(model.getData_source()) && mTaobao == 0) {
-                mCurrentModels.add(model);
+            if (TAOBAO.equals(model.getData_source())) {
+                if (mTaobao == tb) {
+                    mCurrentModels.add(model);
+                }
                 mTaobao++;
             }
 
-            if (WEIBO.equals(model.getData_source()) && mWeibo == 0) {
-                mCurrentModels.add(model);
+            if (WEIBO.equals(model.getData_source())) {
+                if (mWeibo == wb) {
+                    mCurrentModels.add(model);
+                }
                 mWeibo++;
             }
         }
