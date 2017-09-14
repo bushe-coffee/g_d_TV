@@ -2,11 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bj"
-    android:orientation="vertical"
-    android:paddingLeft="68dp"
-    android:paddingBottom="128dp"
-    android:paddingTop="128dp"
-    android:paddingRight="68dp" >
+    android:orientation="vertical" >
 
     <LinearLayout
         android:layout_width="match_parent"

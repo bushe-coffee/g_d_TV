@@ -3,6 +3,8 @@ package com.guangdian.aivideo;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
@@ -36,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -88,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         mVideoView = (VideoView) findViewById(R.id.main_video);
         mRecycleView = (RecyclerView) findViewById(R.id.main_relate);
         mAIContent = (RelativeLayout) findViewById(R.id.main_ai_content);
+        mAIContent.setVisibility(View.GONE);
 
         int margin = YiPlusUtilities.getScreenHeight(this) / 6;
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mAIContent.getLayoutParams();
@@ -150,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case KeyEvent.KEYCODE_MENU:
-                analysisImage();
+//                analysisImage();
                 break;
             case KeyEvent.META_SYM_ON:
                 // 返回 键，
@@ -166,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        System.out.println("Yi plus   222222   " + keyCode);
+        System.out.println("Yi plus   keyBoard    " + keyCode);
         return super.onKeyDown(keyCode, event);
     }
 
@@ -273,8 +276,6 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 mAdapter = new RecycleAdapter();
                                 mRecycleView.setAdapter(mAdapter);
-
-                                analysisImage();
                             }
                         });
 
@@ -297,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
                     mVideoTotal = mediaPlayer.getDuration();
                     mVideoView.start();
                     mIsPlaying = true;
-                    mProgress.setVisibility(View.INVISIBLE);
+                    mProgress.setVisibility(View.GONE);
                 }
             }
         });
@@ -338,7 +339,6 @@ public class MainActivity extends AppCompatActivity {
         String data = YiPlusUtilities.getPostParams(time);
 
         String base64Image = YiPlusUtilities.bitmapToBase64(this);
-        System.out.println("Yi Plus Image " + base64Image);
         String param = null;
         try {
             // base64 得到的 URL 在网络请求过程中 会出现 + 变 空格 的现象。 在 设置 base64 的字符串 之前 进行 格式化
@@ -352,7 +352,6 @@ public class MainActivity extends AppCompatActivity {
             public void onServerResponse(Bundle result) {
                 try {
                     String res = (String) result.get("result");
-                    System.out.println("Yi plus result  " +res);
 
                     JSONObject object = new JSONObject(res);
                     mAnalysisResultModel = new AnalysisResultModel(object);
@@ -535,5 +534,21 @@ public class MainActivity extends AppCompatActivity {
         mVideo = 0;
         mDouban = 0;
         mTaobao = 0;
+    }
+
+    private void handleScreenShot() {
+        String path = YiPlusUtilities.screenShot(this);
+        // 获取内置SD卡路径
+//        String sdCardPath = Environment.getExternalStorageDirectory().getPath();
+        // 图片文件路径
+//        String path = sdCardPath + File.separator + "screenshot.jpg";
+
+        Intent intent = new Intent();
+        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
+            intent.putExtra("ImagePath", path);
+        }
+
+        intent.setAction("com.yiPlus.startActivity");
+        sendBroadcast(intent);
     }
 }

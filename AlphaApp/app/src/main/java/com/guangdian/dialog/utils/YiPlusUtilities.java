@@ -1,4 +1,4 @@
-package com.guangdian.aivideo.utils;
+package com.guangdian.dialog.utils;
 
 
 import android.app.Activity;
@@ -10,16 +10,14 @@ import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 public class YiPlusUtilities {
@@ -147,6 +145,55 @@ public class YiPlusUtilities {
         }
 
         return result;
+    }
+
+    public static String bitmapToBase64(Bitmap bitmap) {
+        String result = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            if (bitmap != null) {
+                baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+
+                baos.flush();
+                baos.close();
+
+                byte[] bitmapBytes = baos.toByteArray();
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (baos != null) {
+                    baos.flush();
+                    baos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
+    public static Bitmap getBitmapFromSDCard(String path) {
+        if (path != null) {
+
+            File file = new File(path);
+            FileInputStream os = null;
+            try {
+                os = new FileInputStream(file);
+                Bitmap bitmap = BitmapFactory.decodeStream(os);
+                os.close();
+
+                return bitmap;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     public static int getScreenWidth(Activity activity) {
