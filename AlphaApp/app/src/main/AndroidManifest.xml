@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.guangdian.dialog">
+    package="com.guangdian.dialog"
+    coreApp="true"
+    android:sharedUserId="android.uid.media">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--允许悬浮窗口 的权限-->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER"/>
+
 
     <application
         android:name=".base.BaseApplication"
@@ -29,12 +36,36 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".StartActivity"
+            android:screenOrientation="landscape" />
+
+        <activity android:name=".TestActivity"
+            android:theme="@style/AlphaActivity">
+            <intent-filter>
+                <action android:name="YIJIA.TEXT" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".CustomerService"
+            android:exported="true"/>
+
         <receiver
             android:name="com.guangdian.dialog.OpenActivityBroadCast"
             android:enabled="true"
             android:exported="true">
             <intent-filter android:priority="1000">
                 <action android:name="com.yiPlus.startActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.guangdian.dialog.ScreenShotBroadCast"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter android:priority="1000">
+                <action android:name="com.gw.cbn.screencap" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>

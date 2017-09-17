@@ -104,15 +104,18 @@ public class YiPlusUtilities {
         AssetManager assetManager = context.getAssets();
         InputStream is = null;
         try {
-            if (MARKID % 4 == 0) {
-                is = assetManager.open("test4.jpg");
-            } else if (MARKID % 4 == 1) {
-                is = assetManager.open("test5.jpg");
-            } else if (MARKID % 4 == 2) {
-                is = assetManager.open("test6.jpg");
-            } else if (MARKID % 4 == 3) {
-                is = assetManager.open("test3.jpg");
-            }
+//            if (MARKID % 4 == 0) {
+//                is = assetManager.open("test4.jpg");
+//            } else if (MARKID % 4 == 1) {
+//                is = assetManager.open("test5.jpg");
+//            } else if (MARKID % 4 == 2) {
+//                is = assetManager.open("test6.jpg");
+//            } else if (MARKID % 4 == 3) {
+//                is = assetManager.open("test3.jpg");
+//            }
+
+            is = assetManager.open("thumbnail.jpg");
+//            is = assetManager.open("screenshot2.jpg");
 
             MARKID++;
         } catch (IOException e) {
@@ -125,7 +128,7 @@ public class YiPlusUtilities {
         try {
             if (bitmap != null) {
                 baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
 
                 baos.flush();
                 baos.close();

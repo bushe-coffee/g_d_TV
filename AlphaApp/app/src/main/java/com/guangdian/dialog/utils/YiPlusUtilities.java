@@ -2,22 +2,23 @@ package com.guangdian.dialog.utils;
 
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ThumbnailUtils;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.View;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.MessageDigest;
 
 public class YiPlusUtilities {
@@ -97,68 +98,30 @@ public class YiPlusUtilities {
         return data;
     }
 
-    public static String bitmapToBase64(Context context) {
-        String result = null;
-        AssetManager assetManager = context.getAssets();
-        InputStream is = null;
-        try {
-            if (MARKID % 4 == 0) {
-                is = assetManager.open("test4.jpg");
-            } else if (MARKID % 4 == 1) {
-                is = assetManager.open("test5.jpg");
-            } else if (MARKID % 4 == 2) {
-                is = assetManager.open("test6.jpg");
-            } else if (MARKID % 4 == 3) {
-                is = assetManager.open("test3.jpg");
-            }
-
-            MARKID++;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Bitmap bitmap = BitmapFactory.decodeStream(is);
-
-        ByteArrayOutputStream baos = null;
-        try {
-            if (bitmap != null) {
-                baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-
-                baos.flush();
-                baos.close();
-
-                byte[] bitmapBytes = baos.toByteArray();
-                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (baos != null) {
-                    baos.flush();
-                    baos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return result;
-    }
-
     public static String bitmapToBase64(Bitmap bitmap) {
         String result = null;
         ByteArrayOutputStream baos = null;
         try {
             if (bitmap != null) {
                 baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                int size = 100; // 100 表示 不压缩
+                bitmap.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                // 判断 图片 质量 大小 是否 小于 70k
+                while (baos.toByteArray().length / 1024 > 70) {
+                    baos.reset();
+                    size -= 10;
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                }
 
                 baos.flush();
                 baos.close();
 
                 byte[] bitmapBytes = baos.toByteArray();
+
+                // 保存 压缩后的图片
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bitmapBytes);
+                saveImageTtoSd(BitmapFactory.decodeStream(inputStream, null, null), "main.jpg");
+
                 result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
             }
         } catch (IOException e) {
@@ -177,24 +140,142 @@ public class YiPlusUtilities {
         return result;
     }
 
-    public static Bitmap getBitmapFromSDCard(String path) {
-        if (path != null) {
+    // 长宽 等比例 缩放 。 并保存 不压缩 的 图片  名字 是 screenshot2
+    public static String getBitmapFromSDCard(String path) {
+        String result = "";
+        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
 
-            File file = new File(path);
-            FileInputStream os = null;
+            Bitmap bitmap = null;
             try {
-                os = new FileInputStream(file);
-                Bitmap bitmap = BitmapFactory.decodeStream(os);
-                os.close();
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(path, options);
 
-                return bitmap;
+                int h = options.outHeight;
+                int w = options.outWidth;
+                int hh = 640;
+                int ww = 460;
+                int be = w / ww; // 压缩率  按照 宽度 缩放 图片
+
+                if (be <= 0) {
+                    be = 1;
+                }
+
+                System.out.println("majie  tupian  yasuo  " + be);
+                options.inSampleSize = be;
+                options.inJustDecodeBounds = false;
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                bitmap = BitmapFactory.decodeFile(path, options);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int size = 100; // 100 表示 不压缩
+                bitmap.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                baos.flush();
+                baos.close();
+                byte[] bitmapBytes = baos.toByteArray();
+
+                // 保存 压缩后的图片
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bitmapBytes);
+                saveImageTtoSd(BitmapFactory.decodeStream(inputStream, null, null), "screenshot2.jpg");
+
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
             } catch (IOException e) {
                 e.printStackTrace();
+                result = "";
             }
         }
 
-        return null;
+        return result;
     }
+
+    //  直接 读取  路径 的图片
+    public static String getBitmapBase64(String path) {
+        String result = "";
+        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
+            try {
+                Bitmap bitmap = null;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+
+                bitmap = BitmapFactory.decodeFile(path, options);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int size = 100; // 100 表示 不压缩
+                bitmap.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                baos.flush();
+                baos.close();
+                byte[] bitmapBytes = baos.toByteArray();
+
+                if (bitmap != null && !bitmap.isRecycled()) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = "";
+            }
+        }
+
+        return result;
+    }
+
+    // 缩放为 短边是 400 的 图片 并保存 名字是 thumbnail
+    public static String getBitmapBase64Thumbnail(String path) {
+        String result = "";
+        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
+            Bitmap bitmap = null;
+            try {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = false;
+                // 默认 是 ARGB_8888 每个 像素 是 4字节。 RGB_565 每个 像素 是 两字节
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                bitmap = BitmapFactory.decodeFile(path, options);
+
+                int newW = 640;
+                int newH = 400;
+                int height = bitmap.getHeight();
+                int width = bitmap.getWidth();
+                float bilvH = ((newH * 1.0f) / (height * 1.0f));
+//                newW = (int) (bilv * (width * 1.0f));
+                float bilvW = ((newW * 1.0f) / (width * 1.0f));
+
+                Matrix matrix = new Matrix();
+                matrix.postScale(bilvW, bilvH);
+
+                Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int size = 100; // 100 表示 不压缩
+                bitmap1.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                baos.flush();
+                baos.close();
+                byte[] bitmapBytes = baos.toByteArray();
+
+                if (bitmap != null && !bitmap.isRecycled()) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+
+                if (bitmap1 != null && !bitmap1.isRecycled()) {
+                    bitmap1.recycle();
+                    bitmap1 = null;
+                }
+
+                // 保存 压缩后的图片
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(bitmapBytes);
+                saveImageTtoSd(BitmapFactory.decodeStream(inputStream, null, null), "thumbnail.jpg");
+
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = "";
+            }
+        }
+
+        return result;
+    }
+
 
     public static int getScreenWidth(Activity activity) {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -210,12 +291,32 @@ public class YiPlusUtilities {
         return metrics.heightPixels;
     }
 
+    // save image
+    public static void saveImageTtoSd(Bitmap bitmap, String name) {
+//        /storage/external_storage/screenshot.jpg
+        File file = new File("/storage/external_storage/" + name);
+        System.out.println("majie  tupian  save  ");
+        try {
+            file.createNewFile();
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("majie   exception   " + e.getMessage());
+        }
+
+    }
+
+    // 应用内截屏
     public static String screenShot(Activity activity) {
         String result = "";
         // 获取屏幕
         View dView = activity.getWindow().getDecorView().getRootView();
         dView.setDrawingCacheEnabled(true);
         dView.buildDrawingCache();
+        System.out.println("majie  screen  shot   ");
         Bitmap bmp = dView.getDrawingCache();
         if (bmp != null) {
             try {

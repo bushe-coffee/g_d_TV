@@ -96,10 +96,15 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        handleIntent();
-
+//        handleIntent();
         System.out.println("YI plus  onResume  ");
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.finish();
     }
 
     @Override
@@ -125,7 +130,7 @@ public class MainActivity extends FragmentActivity {
 
         String path = "/storage/external_storage/screenshot2.jpg";
         if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
-            mBitmap = YiPlusUtilities.getBitmapFromSDCard(path);
+//            mBitmap = YiPlusUtilities.getBitmapFromSDCard(path);
         }
 
         // TODO get the video all data

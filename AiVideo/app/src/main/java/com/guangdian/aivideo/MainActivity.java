@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case KeyEvent.KEYCODE_MENU:
-//                analysisImage();
+                analysisImage();
                 break;
             case KeyEvent.META_SYM_ON:
                 // 返回 键，

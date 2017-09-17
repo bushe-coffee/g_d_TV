@@ -8,8 +8,7 @@
         android:id="@+id/item_background_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/chang_size_background_layout"
-        android:onClick="recycleClick" />
+        android:background="@drawable/chang_size_background_layout" />
 
     <LinearLayout
         android:id="@+id/item_content_container"

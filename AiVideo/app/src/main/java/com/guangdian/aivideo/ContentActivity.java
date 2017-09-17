@@ -105,6 +105,7 @@ public class ContentActivity extends FragmentActivity implements View.OnClickLis
                     mViewPaper.setCurrentItem(mCurrentPage - 1);
                 } else {
                     Toast.makeText(this, "已是第一页", Toast.LENGTH_SHORT).show();
+                    YiPlusUtilities.screenShot(this);
                 }
 
                 break;
