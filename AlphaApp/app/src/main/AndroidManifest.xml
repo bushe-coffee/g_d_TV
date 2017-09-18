@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.guangdian.dialog"
     coreApp="true"
+    package="com.guangdian.dialog"
+    android:installLocation="internalOnly"
     android:sharedUserId="android.uid.media">
+
+    <!--将手机安装到 内存 中而不是 内存卡中-->
+    <!--android:installLocation="internalOnly"-->
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <!--允许悬浮窗口 的权限-->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
-    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER"/>
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
 
+    <!--开机 请求-->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".base.BaseApplication"
@@ -24,39 +30,30 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
-            android:configChanges="keyboard|orientation|screenSize"
-            android:launchMode="singleTop"
-            android:screenOrientation="landscape"
-            android:theme="@style/DialogActivity">
+            android:name=".StartActivity"
+            android:theme="@style/AlphaActivity"
+            android:screenOrientation="landscape" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
 
-        <activity
-            android:name=".StartActivity"
-            android:screenOrientation="landscape" />
+            </activity>
 
-        <activity android:name=".TestActivity"
-            android:theme="@style/AlphaActivity">
-            <intent-filter>
-                <action android:name="YIJIA.TEXT" />
-            </intent-filter>
-        </activity>
-
-        <service android:name=".CustomerService"
-            android:exported="true"/>
+        <service
+            android:name=".CustomerService"
+            android:exported="true" />
 
         <receiver
-            android:name="com.guangdian.dialog.OpenActivityBroadCast"
+            android:name="com.guangdian.dialog.BootBroadCast"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter android:priority="1000">
-                <action android:name="com.yiPlus.startActivity" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.yiplus.awake_server" />
+                <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </receiver>
 

@@ -2,44 +2,8 @@
 
     <item android:drawable="@android:color/holo_blue_bright"
         android:state_focused="true">
-
-        <padding
-            android:left="10dp"
-            android:top="10dp"
-            android:right="10dp"
-            android:bottom="10dp" />
-
-    </item>
-
-    <item android:drawable="@android:color/holo_blue_bright"
-        android:state_pressed="true">
-
-        <padding
-            android:left="10dp"
-            android:top="10dp"
-            android:right="10dp"
-            android:bottom="10dp" />
-
-    </item>
-
-    <item android:drawable="@android:color/holo_blue_bright"
-        android:state_activated="true">
-
-        <padding
-            android:left="10dp"
-            android:top="10dp"
-            android:right="10dp"
-            android:bottom="10dp" />
-
-    </item>
+    </item>ddd
 
     <item android:drawable="@android:color/transparent">
-
-        <padding
-            android:left="5dp"
-            android:top="5dp"
-            android:right="5dp"
-            android:bottom="5dp" />
-
     </item>
 </selector>
