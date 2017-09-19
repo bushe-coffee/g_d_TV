@@ -8,8 +8,12 @@
     <!--将手机安装到 内存 中而不是 内存卡中-->
     <!--android:installLocation="internalOnly"-->
 
+    <!--读写 权限-->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--创建/删除 文件-->
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"/>
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <!--允许悬浮窗口 的权限-->
@@ -20,11 +24,14 @@
     <!--开机 请求-->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+
+    <!--android:persistent="true"  保持application 可以 长久 停留-->
     <application
         android:name=".base.BaseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:persistent="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -44,7 +51,10 @@
 
         <service
             android:name=".CustomerService"
+            android:process=":Yiplus_remote"
             android:exported="true" />
+
+        <!--android:process=":Yiplus_remote"  给service 指定一个新的进程 -->
 
         <receiver
             android:name="com.guangdian.dialog.BootBroadCast"
@@ -53,7 +63,7 @@
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter android:priority="1000">
                 <action android:name="com.yiplus.awake_server" />
-                <category android:name="android.intent.category.HOME" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 

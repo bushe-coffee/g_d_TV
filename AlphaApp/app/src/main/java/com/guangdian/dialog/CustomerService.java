@@ -3,6 +3,7 @@ package com.guangdian.dialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -11,10 +12,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.guangdian.dialog.adapters.RecycleAdapter;
@@ -45,6 +46,8 @@ import java.util.Random;
  * 在 这个 service 里面 添加 一个 View  类似 桌面 歌词
  */
 public class CustomerService extends Service {
+
+    public static String CACHE_PATH = "";
 
     private WindowManager manager;
     private View mContainerView;
@@ -143,10 +146,11 @@ public class CustomerService extends Service {
 
         handleIntent(intent);
 
+        // 展示 数据的时候，监听button的返回键
         mAdapter.setKeyBoardCallBack(new KeyBoardCallback() {
             @Override
             public void onPressBack(int keyCode) {
-                System.out.println("majie  onKeyDown  " + keyCode);
+                System.out.println("majie  onKeyDown 111 " + keyCode);
                 Message message = new Message();
                 message.arg1 = 3;
                 handler.sendMessage(message);
@@ -169,16 +173,33 @@ public class CustomerService extends Service {
 
         mProgress.setVisibility(View.VISIBLE);
 
+        // 网络不好的情况下 ，请求数据的时候 监听 返回键
+        mRecycleView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    System.out.println("majie  onKeyDown 2222 " + keyCode);
+                    Message message = new Message();
+                    message.arg1 = 3;
+                    handler.sendMessage(message);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
         return view;
     }
 
     private void handleIntent(Intent intent) {
         String path = intent.getStringExtra("ImagePath");
+        CACHE_PATH = this.getCacheDir().getAbsolutePath();
         mBitmapBase64 = "";
         if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
             String before = YiPlusUtilities.getBitmapFromSDCard(path);
             String before2 = YiPlusUtilities.getBitmapBase64Thumbnail(path);
-            path = "/storage/external_storage/thumbnail.jpg";
+            path = CACHE_PATH + "/thumbnail.jpg";
 
             mBitmapBase64 = YiPlusUtilities.getBitmapBase64(path);
             System.out.println("majie  " + mBitmapBase64);

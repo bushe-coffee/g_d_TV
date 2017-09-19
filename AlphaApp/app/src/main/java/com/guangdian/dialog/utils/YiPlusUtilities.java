@@ -12,11 +12,11 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.View;
 
+import com.guangdian.dialog.CustomerService;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -26,7 +26,7 @@ public class YiPlusUtilities {
 
     public static String LIST_URL = "http://47.94.37.237/api/video/all";
     public static String VIDEO_COMMEND_URL = "http://47.94.37.237/api/recommand";
-    public static String ANALYSIS_IMAGE_URL = "http://47.94.37.237/api/analysis";
+    public static String ANALYSIS_IMAGE_URL = "http://47.94.37.237:62003/api/analysis";
     private static String ACCESS_KEY = "9aPx3h888D0rWcX20HSayvHqxlvxHbjn";
     private static String SECRET_KEY = "CNkx6KJYxTtEr6WF3ChOEKZIl4WMWG4n0i3Hvo8Ov4o";
 
@@ -293,11 +293,14 @@ public class YiPlusUtilities {
 
     // save image
     public static void saveImageTtoSd(Bitmap bitmap, String name) {
-//        /storage/external_storage/screenshot.jpg
-        File file = new File("/storage/external_storage/" + name);
+        String cache = CustomerService.CACHE_PATH;
+        File file = new File(cache + "/" + name);
         System.out.println("majie  tupian  save  ");
         try {
-            file.createNewFile();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
             FileOutputStream out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
             out.flush();

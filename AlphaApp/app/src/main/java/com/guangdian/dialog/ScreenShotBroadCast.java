@@ -17,12 +17,14 @@ public class ScreenShotBroadCast extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        String cache = context.getCacheDir().getAbsolutePath();
         if (!YiPlusUtilities.isStringNullOrEmpty(action) && action.equals(SCREEN_CAP_ACTION))
             try {
-                System.out.println("majie 1111 " + System.currentTimeMillis());
+                System.out.println("majie 1111 " + System.currentTimeMillis() + "   " + cache);
+                String adbContent = "/system/bin/screencap -p " + cache + "/screenshot.jpg";
                 Process sh = Runtime.getRuntime().exec("su", null, null);
                 OutputStream os = sh.getOutputStream();
-                os.write(("/system/bin/screencap -p /storage/external_storage/screenshot.jpg").getBytes("ASCII"));
+                os.write(adbContent.getBytes("ASCII"));
                 os.flush();
                 os.close();
                 sh.waitFor();
@@ -30,7 +32,7 @@ public class ScreenShotBroadCast extends BroadcastReceiver {
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                String path = "/storage/external_storage/screenshot.jpg";
+                String path = cache + "/screenshot.jpg";
                 Intent intent1 = new Intent(context, CustomerService.class);
                 intent1.putExtra("ImagePath", path);
                 System.out.println("majie  plus  Start service    ");
