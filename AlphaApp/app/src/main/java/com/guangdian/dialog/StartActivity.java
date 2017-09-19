@@ -12,5 +12,11 @@ public class StartActivity extends FragmentActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.finish();
+    }
 }
 

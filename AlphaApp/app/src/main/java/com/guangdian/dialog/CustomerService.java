@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.guangdian.dialog.adapters.RecycleAdapter;
@@ -105,10 +106,18 @@ public class CustomerService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        System.out.println("majie   onDestory   ");
+        Intent intent = new Intent();
+        intent.setAction("com.yiplus.awake_server");
+        sendBroadcast(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        if (intent == null || YiPlusUtilities.isStringNullOrEmpty(intent.getStringExtra("ImagePath"))) {
+            return START_STICKY;
+        }
 
         manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         WindowManager.LayoutParams params;
@@ -151,7 +160,7 @@ public class CustomerService extends Service {
     private View getViewForWindow() {
         View view = LayoutInflater.from(this).inflate(R.layout.notification_layout, null, false);
 
-        mRecycleView = view.findViewById(R.id.notifi_relate);
+        mRecycleView = view.findViewById(R.id.notifi_list);
         mProgress = view.findViewById(R.id.notifi_load_list_progress);
 
         mRecycleView.setLayoutManager(new LinearLayoutManager(this));

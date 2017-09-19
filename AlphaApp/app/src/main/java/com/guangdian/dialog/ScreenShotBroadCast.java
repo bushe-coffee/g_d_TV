@@ -12,10 +12,12 @@ import java.io.OutputStream;
 
 public class ScreenShotBroadCast extends BroadcastReceiver {
 
+    private static final String SCREEN_CAP_ACTION = "com.gw.cbn.screencap";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (!YiPlusUtilities.isStringNullOrEmpty(action) && action.equals("com.gw.cbn.screencap"))
+        if (!YiPlusUtilities.isStringNullOrEmpty(action) && action.equals(SCREEN_CAP_ACTION))
             try {
                 System.out.println("majie 1111 " + System.currentTimeMillis());
                 Process sh = Runtime.getRuntime().exec("su", null, null);

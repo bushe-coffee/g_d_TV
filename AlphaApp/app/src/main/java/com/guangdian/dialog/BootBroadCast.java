@@ -5,25 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 
 
-public class OpenActivityBroadCast extends BroadcastReceiver {
+public class BootBroadCast extends BroadcastReceiver {
+
+    public static final String BOOT_ACTION = "android.intent.action.BOOT_COMPLETED";
+    public static final String AWAKE_SERVER = "com.yiplus.awake_server";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        System.out.println("YI plus  onReceive  ");
-        if (intent != null) {
-            String path = intent.getStringExtra("ImagePath");
+        System.out.println("majie   BootBroadCast ");
+        if (intent != null && AWAKE_SERVER.equals(intent.getAction())) {
+            System.out.println("majie   open boot broadcast and start serves ");
             Intent intent1 = new Intent(context, CustomerService.class);
 //            intent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
 //                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
 //                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-            intent1.putExtra("ImagePath", path);
-            System.out.println("YI plus  startActivity  ");
             context.startService(intent1);
         }
-
-        // 终止广播
-//        abortBroadcast();
     }
 
 
