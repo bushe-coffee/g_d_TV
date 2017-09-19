@@ -2,6 +2,7 @@ package com.guangdian.dialog.adapters;
 
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -26,15 +27,17 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
     private List<CommendModel> mDatas;
     private Context mContext;
     private KeyBoardCallback mCallback;
+    private List<Button> arrayButtons = new ArrayList<>();
 
-    private final String BAIDU = "百度百科";
-    private final String WEIBO = "微博";
-    private final String VIDEO = "点播视频";
-    private final String DOUBAN = "豆瓣";
-    private final String TAOBAO = "商品";
+    private static final String BAIDU = "百度百科";
+    private static final String WEIBO = "微博";
+    private static final String VIDEO = "点播视频";
+    private static final String DOUBAN = "豆瓣";
+    private static final String TAOBAO = "商品";
 
     public void setDatas(List<CommendModel> datas) {
         mDatas.clear();
+        arrayButtons.clear();
         mDatas.addAll(datas);
         this.notifyDataSetChanged();
     }
@@ -82,6 +85,7 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
                 }
 
                 holder.mBackGroundButton.setTag(model.getTag_name());
+                arrayButtons.add(holder.mBackGroundButton);
             }
         }
     }
@@ -89,6 +93,12 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
     @Override
     public int getItemCount() {
         return mDatas.size();
+    }
+
+    private void clearButtonBackground() {
+        for (Button button : arrayButtons) {
+            button.setBackgroundColor(Color.TRANSPARENT);
+        }
     }
 
     class RecycleHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -121,6 +131,8 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
                         return true;
                     }
 
+                    clearButtonBackground();
+                    view.setBackgroundColor(Color.BLUE);
                     return false;
                 }
             });
