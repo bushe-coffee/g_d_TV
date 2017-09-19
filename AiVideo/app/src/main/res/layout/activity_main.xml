@@ -1,48 +1,17 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bj">
 
-    <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="2"
-        android:gravity="center">
+    <VideoView
+        android:id="@+id/main_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-        <VideoView
-            android:id="@+id/main_video"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+    <ProgressBar
+        android:id="@+id/main_load_progress"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_centerInParent="true" />
 
-        <ProgressBar
-            android:id="@+id/main_load_progress"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_centerInParent="true" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/main_ai_content"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:visibility="visible">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/main_relate"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp" />
-
-        <ProgressBar
-            android:id="@+id/main_load_list_progress"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_centerInParent="true" />
-
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>

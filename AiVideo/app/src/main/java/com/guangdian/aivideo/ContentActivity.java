@@ -1,6 +1,7 @@
 package com.guangdian.aivideo;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -105,7 +106,7 @@ public class ContentActivity extends FragmentActivity implements View.OnClickLis
                     mViewPaper.setCurrentItem(mCurrentPage - 1);
                 } else {
                     Toast.makeText(this, "已是第一页", Toast.LENGTH_SHORT).show();
-                    YiPlusUtilities.screenShot(this);
+                    Uri uri = Uri.parse("com.yiplus.result://authActivity");
                 }
 
                 break;

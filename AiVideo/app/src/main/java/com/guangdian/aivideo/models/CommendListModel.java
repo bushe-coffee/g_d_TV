@@ -13,69 +13,94 @@ public class CommendListModel {
     private final String DOUBAN = "豆瓣";
     private final String TAOBAO = "商品";
 
-    private List<CommendModel> models;
-    private int BaiduNum = 0;
-    private int WeiboNum = 0;
-    private int DoubanNum = 0;
-    private int DianboNum = 0;
-    private int TaobaoNum = 0;
+    private List<CommendModel> baiduModels;
+    private List<CommendModel> weiboModels;
+    private List<CommendModel> doubanModels;
+    private List<CommendModel> dianboModels;
+    private List<CommendModel> taobaoModels;
 
     public CommendListModel(JSONArray array) {
-        BaiduNum = 0;
-        WeiboNum = 0;
-        DoubanNum = 0;
-        DianboNum = 0;
-        TaobaoNum = 0;
+        initAllList();
 
         if (array != null) {
-            models = new ArrayList<>();
             for (int i = 0; i < array.length(); ++i) {
                 CommendModel commendModel = new CommendModel(array.optJSONObject(i));
-                models.add(commendModel);
+
                 if (BAIDU.equals(commendModel.getData_source())) {
-                    BaiduNum++;
+                    baiduModels.add(commendModel);
                 }
 
                 if (DOUBAN.equals(commendModel.getData_source())) {
-                    DoubanNum++;
+                    doubanModels.add(commendModel);
                 }
 
                 if (VIDEO.equals(commendModel.getData_source())) {
-                    DianboNum++;
+                    dianboModels.add(commendModel);
                 }
 
                 if (WEIBO.equals(commendModel.getData_source())) {
-                    WeiboNum++;
+                    weiboModels.add(commendModel);
                 }
 
                 if (TAOBAO.equals(commendModel.getData_source())) {
-                    TaobaoNum++;
+                    taobaoModels.add(commendModel);
                 }
             }
         }
     }
 
-    public List<CommendModel> getModels() {
-        return models;
+    public List<CommendModel> getModels(int type) {
+        List<CommendModel> result = null;
+        switch (type) {
+            case 0:
+                result = baiduModels;
+                break;
+            case 1:
+                result = dianboModels;
+                break;
+            case 2:
+                result = weiboModels;
+                break;
+            case 3:
+                result = doubanModels;
+                break;
+            case 4:
+                result = taobaoModels;
+                break;
+        }
+        
+        return result;
     }
 
-    public int getBaiduNum() {
-        return BaiduNum;
-    }
+    private void initAllList() {
+        if (baiduModels != null) {
+            baiduModels.clear();
+        } else {
+            baiduModels = new ArrayList<>();
+        }
 
-    public int getWeiboNum() {
-        return WeiboNum;
-    }
+        if (weiboModels != null) {
+            weiboModels.clear();
+        } else {
+            weiboModels = new ArrayList<>();
+        }
 
-    public int getDoubanNum() {
-        return DoubanNum;
-    }
+        if (doubanModels != null) {
+            doubanModels.clear();
+        } else {
+            doubanModels = new ArrayList<>();
+        }
 
-    public int getDianboNum() {
-        return DianboNum;
-    }
+        if (dianboModels != null) {
+            dianboModels.clear();
+        } else {
+            dianboModels = new ArrayList<>();
+        }
 
-    public int getTaobaoNum() {
-        return TaobaoNum;
+        if (taobaoModels != null) {
+            taobaoModels.clear();
+        } else {
+            taobaoModels = new ArrayList<>();
+        }
     }
 }

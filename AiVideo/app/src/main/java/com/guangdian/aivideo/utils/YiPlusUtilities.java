@@ -1,16 +1,15 @@
 package com.guangdian.aivideo.utils;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 
 import java.io.ByteArrayOutputStream;
@@ -18,8 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 public class YiPlusUtilities {
@@ -151,6 +148,57 @@ public class YiPlusUtilities {
 
         return result;
     }
+
+    // 缩放为 短边是 400 的 图片 并保存 名字是 thumbnail
+    public static String getBitmapBase64Thumbnail(String path) {
+        String result = "";
+        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
+            Bitmap bitmap = null;
+            try {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = false;
+                // 默认 是 ARGB_8888 每个 像素 是 4字节。 RGB_565 每个 像素 是 两字节
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                bitmap = BitmapFactory.decodeFile(path, options);
+
+                int newW = 640;
+                int newH = 400;
+                int height = bitmap.getHeight();
+                int width = bitmap.getWidth();
+                float bilvH = ((newH * 1.0f) / (height * 1.0f));
+
+                Matrix matrix = new Matrix();
+                matrix.postScale(bilvH, bilvH);
+
+                Bitmap bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int size = 100; // 100 表示 不压缩
+                bitmap1.compress(Bitmap.CompressFormat.JPEG, size, baos);
+                baos.flush();
+                baos.close();
+                byte[] bitmapBytes = baos.toByteArray();
+
+                if (bitmap != null && !bitmap.isRecycled()) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+
+                if (bitmap1 != null && !bitmap1.isRecycled()) {
+                    bitmap1.recycle();
+                    bitmap1 = null;
+                }
+
+                result = Base64.encodeToString(bitmapBytes, Base64.NO_WRAP);
+            } catch (IOException e) {
+                e.printStackTrace();
+                result = "";
+            }
+        }
+
+        return result;
+    }
+
 
     public static int getScreenWidth(Activity activity) {
         DisplayMetrics metrics = new DisplayMetrics();
