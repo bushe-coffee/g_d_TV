@@ -2,11 +2,13 @@
     android:id="@+id/item_content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@android:color/white"
     android:orientation="vertical">
 
     <Button
         android:id="@+id/item_background_button"
         android:layout_width="match_parent"
+        android:background="@android:color/darker_gray"
         android:layout_height="match_parent" />
 
     <LinearLayout
@@ -14,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_margin="4dp"
+        android:layout_margin="6dp"
         android:background="@drawable/baidu_bj"
         android:orientation="horizontal">
 
@@ -66,7 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_margin="4dp"
+        android:layout_margin="6dp"
         android:orientation="horizontal"
         android:visibility="visible">
 

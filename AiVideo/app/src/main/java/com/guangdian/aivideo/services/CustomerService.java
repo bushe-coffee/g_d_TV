@@ -14,13 +14,17 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterViewFlipper;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.guangdian.aivideo.NetWorkCallback;
 import com.guangdian.aivideo.R;
+import com.guangdian.aivideo.adapters.FilperAdapter;
 import com.guangdian.aivideo.adapters.RecycleAdapter;
 import com.guangdian.aivideo.models.AnalysisResultModel;
 import com.guangdian.aivideo.models.CategoriesModel;
@@ -54,12 +58,11 @@ public class CustomerService extends Service {
     private WindowManager manager;
     private View mContainerView;
 
-    private RecyclerView mRecycleView;
     private ProgressBar mProgress;
     private String mBitmapBase64;
+    private AdapterViewFlipper mFliper;
 
     private CommendListModel models;
-//    private List<CommendModel> mAllmModels;
     private RecycleAdapter mAdapter;
     private AnalysisResultModel mAnalysisResultModel;
     private List<CommendModel> mCurrentModels = new ArrayList<>();
@@ -69,6 +72,12 @@ public class CustomerService extends Service {
     private int mVideo = 0;
     private int mDouban = 0;
     private int mTaobao = 0;
+
+    private static final String BAIDU = "百度百科";
+    private static final String WEIBO = "微博";
+    private static final String VIDEO = "点播视频";
+    private static final String DOUBAN = "豆瓣";
+    private static final String TAOBAO = "商品";
 
     private Handler handler = new Handler() {
         @Override
@@ -85,9 +94,39 @@ public class CustomerService extends Service {
             } else if (msg.arg1 == 3) {
                 manager.removeViewImmediate(mContainerView);
             } else if (msg.arg1 == 4) {
-                updateManagetView(models.getModels(0));
+                Bundle bundle = msg.getData();
+                String source = bundle.getString("source");
+                int arg2 = 0;
+                if (BAIDU.equals(source)) {
+                    arg2 = 0;
+                } else if (VIDEO.equals(source)) {
+                    arg2 = 1;
+                } else if (WEIBO.equals(source)) {
+                    arg2 = 2;
+                } else if (DOUBAN.equals(source)) {
+                    arg2 = 3;
+                } else if (TAOBAO.equals(source)) {
+                    arg2 = 4;
+                }
+                updateManagetView(models.getModels(arg2), source);
             }
+        }
+    };
 
+    private KeyBoardCallback adapterCallBack = new KeyBoardCallback() {
+        @Override
+        public void onPressBack(int keyCode) {
+            Message message = new Message();
+            message.arg1 = 3;
+            handler.sendMessage(message);
+        }
+
+        @Override
+        public void onPressEnter(int keyCode, Bundle bundle) {
+            Message message = new Message();
+            message.setData(bundle);
+            message.arg1 = 4;
+            handler.sendMessage(message);
         }
     };
 
@@ -113,14 +152,36 @@ public class CustomerService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-
         if (intent == null || YiPlusUtilities.isStringNullOrEmpty(intent.getStringExtra("ImagePath"))) {
             return START_STICKY;
         }
 
         manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        WindowManager.LayoutParams params;
-        params = new WindowManager.LayoutParams();
+
+        WindowManager.LayoutParams params = setLayoutParams();
+        View view = getViewForWindowToList();
+        mContainerView = null;
+        addViewToManager(view, params);
+
+        handleIntent(intent);
+
+        return START_STICKY;
+    }
+
+    private void addViewToManager(View view, WindowManager.LayoutParams params) {
+        if (manager != null) {
+            if (mContainerView != null) {
+                manager.removeViewImmediate(mContainerView);
+            }
+
+            view.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_join));
+            manager.addView(view, params);
+            mContainerView = view;
+        }
+    }
+
+    private WindowManager.LayoutParams setLayoutParams() {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
 
         params.width = WindowManager.LayoutParams.WRAP_CONTENT;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -137,73 +198,108 @@ public class CustomerService extends Service {
         params.gravity = Gravity.RIGHT | Gravity.TOP;
         params.dimAmount = 0.4f;
 
-        mContainerView = getViewForWindow();
-        manager.addView(mContainerView, params);
-
-        handleIntent(intent);
-
-        // 展示 数据的时候，监听button的返回键
-        mAdapter.setKeyBoardCallBack(new KeyBoardCallback() {
-            @Override
-            public void onPressBack(int keyCode) {
-                Message message = new Message();
-                message.arg1 = 3;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onPressEnter(int keyCode, Bundle bundle) {
-                String source = bundle.getString("source");
-                Message message = new Message();
-                message.arg1 = 4;
-                handler.sendMessage(message);
-            }
-        });
-
-        return START_STICKY;
+        return params;
     }
 
-    private void updateManagetView(List<CommendModel> datas) {
-        manager.removeViewImmediate(mContainerView);
-        View view = getViewForWindowToDetail(datas);
+    private void updateManagetView(List<CommendModel> datas, String source) {
 
-        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        WindowManager.LayoutParams params;
-        params = new WindowManager.LayoutParams();
+        if (manager == null) {
+            manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        }
+        WindowManager.LayoutParams params = setLayoutParams();
+        View view = getViewForWindowToDetail(datas, source);
 
-        params.width = WindowManager.LayoutParams.WRAP_CONTENT;
-        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-
-        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
-        params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND |
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
-                WindowManager.LayoutParams.FLAG_SECURE;
-
-        params.gravity = Gravity.RIGHT | Gravity.TOP;
-        params.dimAmount = 0.4f;
-
-        manager.addView(view, params);
+        addViewToManager(view, params);
     }
 
-    private int currentPage = 0;
-    private View getViewForWindowToDetail(List<CommendModel> datas) {
-        CommendModel model = datas.get(currentPage);
+    private View getViewForWindowToDetail(List<CommendModel> datas, String source) {
+
         View view = LayoutInflater.from(this).inflate(R.layout.notifi_detail_layout, null, false);
 
         TextView title = view.findViewById(R.id.notifi_page_title);
-        TextView content = view.findViewById(R.id.notifi_page_content);
+        mFliper = view.findViewById(R.id.notifi_page_content);
+        Button background = view.findViewById(R.id.notifi_page_background);
+        Button backButton = view.findViewById(R.id.notifi_page_back_button);
 
-        title.setText(model.getDisplay_title());
-        content.setText(model.getDetailed_description());
+        background.setOnKeyListener(keyListener);
+        backButton.setOnKeyListener(keyListener);
+
+        title.setText(source);
+        FilperAdapter adapter = new FilperAdapter(this);
+        adapter.setDatas(datas);
+        mFliper.setAdapter(adapter);
 
         return view;
     }
 
+    private OnKeyListener keyListener = new OnKeyListener() {
+        @Override
+        public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
 
-    private View getViewForWindow() {
+            if (YiPlusUtilities.DOUBLECLICK) {
+                System.out.println("majie  button    " + keyCode);
+                synchronized (YiPlusUtilities.class) {
+                    YiPlusUtilities.DOUBLECLICK = false;
+                }
+
+                int id = view.getId();
+                if (id == R.id.notifi_page_background) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+                        WindowManager.LayoutParams params = setLayoutParams();
+                        View view2 = getViewForWindowToList();
+                        if (mAdapter != null) {
+                            mAdapter.setDatas(mCurrentModels);
+                        }
+
+                        addViewToManager(view2, params);
+                        return true;
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                        if (mFliper != null) {
+                            mFliper.showNext();
+                        }
+                        return true;
+                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                        if (mFliper != null) {
+                            mFliper.showPrevious();
+                        }
+                        return true;
+                    } else if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+                        return true;
+                    }
+                } else if (id == R.id.notifi_page_back_button) {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+
+                        WindowManager.LayoutParams params = setLayoutParams();
+                        View view2 = getViewForWindowToList();
+                        if (mAdapter != null) {
+                            mAdapter.setDatas(mCurrentModels);
+                        }
+
+                        addViewToManager(view2, params);
+                        return false;
+                    }
+                }
+            }
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (YiPlusUtilities.class) {
+                        YiPlusUtilities.DOUBLECLICK = true;
+                    }
+                }
+            }, 1000);
+
+            return false;
+        }
+    };
+
+    private View getViewForWindowToList() {
         View view = LayoutInflater.from(this).inflate(R.layout.notification_layout, null, false);
 
-        mRecycleView = view.findViewById(R.id.notifi_list);
+        RecyclerView mRecycleView = view.findViewById(R.id.notifi_list);
         mProgress = view.findViewById(R.id.notifi_load_list_progress);
 
         mRecycleView.setLayoutManager(new LinearLayoutManager(this));
@@ -213,7 +309,7 @@ public class CustomerService extends Service {
         mProgress.setVisibility(View.VISIBLE);
 
         // 网络不好的情况下 ，请求数据的时候 监听 返回键
-        mRecycleView.setOnKeyListener(new View.OnKeyListener() {
+        mRecycleView.setOnKeyListener(new OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -226,6 +322,9 @@ public class CustomerService extends Service {
                 return false;
             }
         });
+
+        // 展示 数据的时候，监听button的返回键
+        mAdapter.setKeyBoardCallBack(adapterCallBack);
 
         return view;
     }
@@ -298,7 +397,7 @@ public class CustomerService extends Service {
             List<CommendModel> douban = models.getModels(3);
             List<CommendModel> dianbo = models.getModels(1);
             // people 取第一个识别出来的 人
-            String name = (people != null && people.size() > 0 ) ? people.get(0) : "";
+            String name = (people != null && people.size() > 0) ? people.get(0) : "";
             if (!YiPlusUtilities.isStringNullOrEmpty(name)) {
                 for (CommendModel m : baidu) {
                     if (name.equals(m.getTag_name()) && mBaidu == 0) {
@@ -409,7 +508,7 @@ public class CustomerService extends Service {
         }
     }
 
-    private void randomOneData(List<CommendModel> datas){
+    private void randomOneData(List<CommendModel> datas) {
         Random baiduR = new Random();
         if (datas != null && datas.size() > 0) {
             int random = baiduR.nextInt(datas.size() - 1);

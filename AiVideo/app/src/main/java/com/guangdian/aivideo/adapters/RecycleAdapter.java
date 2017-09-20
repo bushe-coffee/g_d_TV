@@ -4,6 +4,7 @@ package com.guangdian.aivideo.adapters;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.guangdian.aivideo.R;
 import com.guangdian.aivideo.models.CommendModel;
 import com.guangdian.aivideo.utils.KeyBoardCallback;
+import com.guangdian.aivideo.utils.YiPlusUtilities;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
@@ -86,6 +88,8 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
 
                 holder.mBackGroundButton.setTag(model.getData_source());
                 arrayButtons.add(holder.mBackGroundButton);
+
+                holder.mBackGroundButton.setOnKeyListener(keyListener);
             }
         }
     }
@@ -97,9 +101,45 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
 
     private void clearButtonBackground() {
         for (View button : arrayButtons) {
-            button.setBackgroundColor(Color.TRANSPARENT);
+            button.setBackgroundColor(Color.GRAY);
         }
     }
+
+    private View.OnKeyListener keyListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+            if (YiPlusUtilities.DOUBLECLICK) {
+                System.out.println("majie  list    " + keyCode);
+                synchronized (YiPlusUtilities.class) {
+                    YiPlusUtilities.DOUBLECLICK = false;
+                }
+
+                if (mCallback != null && keyCode == KeyEvent.KEYCODE_BACK) {
+                    mCallback.onPressBack(keyCode);
+                    return false;
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("source", (String) view.getTag());
+                    mCallback.onPressEnter(keyCode, bundle);
+                    return false;
+                }
+
+                clearButtonBackground();
+                view.setBackgroundColor(Color.BLUE);
+            }
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (YiPlusUtilities.class) {
+                        YiPlusUtilities.DOUBLECLICK = true;
+                    }
+                }
+            }, 1000);
+
+            return false;
+        }
+    };
 
     class RecycleHolder extends RecyclerView.ViewHolder {
 
@@ -123,24 +163,6 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.RecycleH
 
             mBackGroundButton = itemView.findViewById(R.id.item_background_button);
 
-            mBackGroundButton.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-                    System.out.println("majie    " + keyCode);
-                    if (mCallback != null && keyCode == KeyEvent.KEYCODE_BACK) {
-                        mCallback.onPressBack(keyCode);
-                        return true;
-                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("source", (String) view.getTag());
-                        mCallback.onPressEnter(keyCode, bundle);
-                    }
-
-                    clearButtonBackground();
-                    view.setBackgroundColor(Color.BLUE);
-                    return false;
-                }
-            });
         }
     }
 }

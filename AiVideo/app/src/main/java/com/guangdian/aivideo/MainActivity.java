@@ -3,69 +3,20 @@ package com.guangdian.aivideo;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.guangdian.aivideo.models.AnalysisResultModel;
-import com.guangdian.aivideo.models.CategoriesModel;
-import com.guangdian.aivideo.models.CommendListModel;
-import com.guangdian.aivideo.models.CommendModel;
-import com.guangdian.aivideo.models.FacesModel;
-import com.guangdian.aivideo.models.ScenesModel;
-import com.guangdian.aivideo.utils.NetWorkUtils;
-import com.guangdian.aivideo.utils.YiPlusUtilities;
-import com.nostra13.universalimageloader.core.ImageLoader;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private ProgressBar mProgress;
     private VideoView mVideoView;
     private String mUrl;
-
-    private CommendListModel allModels;
-    private List<CommendModel> mAllmModels;
-    private List<CommendModel> mCurrentModels = new ArrayList<>();
-    private AnalysisResultModel mAnalysisResultModel;
-    private int mBaidu = 0;
-    private int mWeibo = 0;
-    private int mVideo = 0;
-    private int mDouban = 0;
-    private int mTaobao = 0;
-    private final String BAIDU = "百度百科";
-    private final String WEIBO = "微博";
-    private final String VIDEO = "点播视频";
-    private final String DOUBAN = "豆瓣";
-    private final String TAOBAO = "商品";
 
     private boolean mIsPlaying = false;
     private int mVideoTotal = 0;
@@ -123,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean doubleClick = false;
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
@@ -136,29 +86,11 @@ public class MainActivity extends AppCompatActivity {
                     mIsPlaying = true;
                 }
                 break;
-            case KeyEvent.KEYCODE_MENU:
-                if (doubleClick) {
-                    Intent intent = new Intent("com.gw.cbn.screencap");
-                    sendBroadcast(intent);
-                }
 
-                doubleClick = true;
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        doubleClick = false;
-                    }
-                }, 1000);
-
-                break;
         }
 
         System.out.println("Yi plus   keyBoard    " + keyCode);
         return super.onKeyDown(keyCode, event);
-    }
-
-    public void recycleClick(View view) {
-        Toast.makeText(MainActivity.this, "hello  ", Toast.LENGTH_SHORT).show();
     }
 
 

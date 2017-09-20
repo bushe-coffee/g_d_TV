@@ -21,6 +21,7 @@ import java.security.MessageDigest;
 
 public class YiPlusUtilities {
 
+    public static boolean DOUBLECLICK = true;
 
     public static String LIST_URL = "http://47.94.37.237/api/video/all";
     public static String VIDEO_COMMEND_URL = "http://47.94.37.237/api/recommand";
