@@ -47,16 +47,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".DetailItemActivity"
-            android:configChanges="keyboard|orientation|screenSize">
-
-            <intent-filter>
-                <action android:name="com.yiplus.detail.message" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-        </activity>
-
         <service
             android:name=".services.CustomerService"
             android:process=":yiplus_remote"

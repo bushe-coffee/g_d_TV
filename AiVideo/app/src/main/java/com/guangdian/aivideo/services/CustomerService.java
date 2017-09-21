@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterViewFlipper;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -40,6 +42,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -79,17 +83,22 @@ public class CustomerService extends Service {
     private static final String DOUBAN = "豆瓣";
     private static final String TAOBAO = "商品";
 
+    private static boolean PREPARE_ALL_DATA = false;
+    private static boolean PREPARE_IMAGE_BASE64 = false;
+
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.arg1 == 1) {
-                if (!YiPlusUtilities.isStringNullOrEmpty(mBitmapBase64)) {
+                if (!YiPlusUtilities.isStringNullOrEmpty(mBitmapBase64) && PREPARE_ALL_DATA && PREPARE_IMAGE_BASE64) {
+                    PREPARE_IMAGE_BASE64 = false;
+                    // 任何 图片都会有一个结果。只是返回的是不是 空
                     analysisImage();
-                } else {
-                    SelectRightResult();
                 }
             } else if (msg.arg1 == 2) {
+                // 识别 列表
+                showAnsyncList();
                 SelectRightResult();
             } else if (msg.arg1 == 3) {
                 manager.removeViewImmediate(mContainerView);
@@ -140,11 +149,14 @@ public class CustomerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        PREPARE_ALL_DATA = false;
+        PREPARE_IMAGE_BASE64 = false;
         Intent intent = new Intent();
         intent.setAction("com.yiplus.awake_server");
         sendBroadcast(intent);
@@ -152,20 +164,98 @@ public class CustomerService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-        if (intent == null || YiPlusUtilities.isStringNullOrEmpty(intent.getStringExtra("ImagePath"))) {
+        if (intent == null || !intent.getBooleanExtra("StartScreenCap", false)) {
             return START_STICKY;
         }
 
-        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        mContainerView = null;
+        PREPARE_ALL_DATA = false;
+        PREPARE_IMAGE_BASE64 = false;
+        prepareAllData();
+        showYiPlusLogo();
+        screenCapAndRequest();
+
+        return START_STICKY;
+    }
+
+    private void prepareAllData() {
+        // TODO get the video all data
+        String time = (System.currentTimeMillis() / 1000) + "";
+        String data = YiPlusUtilities.getPostParams(time);
+        NetWorkUtils.post(YiPlusUtilities.VIDEO_COMMEND_URL, data, null, new NetWorkCallback() {
+            @Override
+            public void onServerResponse(Bundle result) {
+                try {
+                    String res = (String) result.get("result");
+                    if (!YiPlusUtilities.isStringNullOrEmpty(res)) {
+                        JSONArray array = new JSONArray(res);
+                        models = new CommendListModel(array);
+                        PREPARE_ALL_DATA = true;
+
+                        sendMessageForHandle(1, null);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void screenCapAndRequest() {
+        CACHE_PATH = this.getCacheDir().getAbsolutePath();
+        try {
+            Log.d("Yi+", "screencap start  " + System.currentTimeMillis());
+            String adbContent = "/system/bin/screencap -p " + CACHE_PATH + "/screenshot.jpg";
+            Process sh = Runtime.getRuntime().exec("su", null, null);
+            OutputStream os = sh.getOutputStream();
+            os.write(adbContent.getBytes("ASCII"));
+            os.flush();
+            os.close();
+            sh.waitFor();
+            Log.d("Yi+", "screencap end  " + System.currentTimeMillis());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            mBitmapBase64 = "";
+            if (!YiPlusUtilities.isStringNullOrEmpty(CACHE_PATH + "/screenshot.jpg")) {
+                mBitmapBase64 = YiPlusUtilities.getBitmapBase64Thumbnail(CACHE_PATH + "/screenshot.jpg");
+                PREPARE_IMAGE_BASE64 = true;
+                sendMessageForHandle(1, null);
+            }
+        }
+    }
+
+    private void sendMessageForHandle(int arg, Bundle bundle) {
+        synchronized (handler) {
+            Message message = new Message();
+            message.arg1 = arg;
+            if (bundle != null) {
+                message.setData(bundle);
+            }
+
+            handler.sendMessage(message);
+        }
+    }
+
+    private void showYiPlusLogo() {
+        if (manager == null) {
+            manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        }
+
+        WindowManager.LayoutParams params = setLayoutParams();
+        ImageView view = new ImageView(this);
+        view.setImageResource(R.drawable.bj);
+        addViewToManager(view, params);
+    }
+
+    private void showAnsyncList() {
+        if (manager == null) {
+            manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        }
 
         WindowManager.LayoutParams params = setLayoutParams();
         View view = getViewForWindowToList();
-        mContainerView = null;
         addViewToManager(view, params);
-
-        handleIntent(intent);
-
-        return START_STICKY;
     }
 
     private void addViewToManager(View view, WindowManager.LayoutParams params) {
@@ -329,41 +419,6 @@ public class CustomerService extends Service {
         return view;
     }
 
-    private void handleIntent(Intent intent) {
-        String path = intent.getStringExtra("ImagePath");
-        CACHE_PATH = this.getCacheDir().getAbsolutePath();
-        mBitmapBase64 = "";
-        if (!YiPlusUtilities.isStringNullOrEmpty(path)) {
-            mBitmapBase64 = YiPlusUtilities.getBitmapBase64Thumbnail(path);
-        }
-
-        // TODO get the video all data
-        this.ShowDefaultMessage2();
-    }
-
-    private void ShowDefaultMessage2() {
-        String time = (System.currentTimeMillis() / 1000) + "";
-        String data = YiPlusUtilities.getPostParams(time);
-        NetWorkUtils.post(YiPlusUtilities.VIDEO_COMMEND_URL, data, null, new NetWorkCallback() {
-            @Override
-            public void onServerResponse(Bundle result) {
-                try {
-                    String res = (String) result.get("result");
-                    if (!YiPlusUtilities.isStringNullOrEmpty(res)) {
-                        JSONArray array = new JSONArray(res);
-                        models = new CommendListModel(array);
-
-                        Message message = new Message();
-                        message.arg1 = 1;
-                        handler.sendMessage(message);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
     private void SelectRightResult() {
         clearData();
 
@@ -373,7 +428,9 @@ public class CustomerService extends Service {
             Map<String, List<String>> map = handleAnalysisResult();
             if (map == null || map.isEmpty()) {
                 getShowResultForAnalysis(false);
-                mAdapter.setDatas(mCurrentModels);
+                if (mAdapter != null) {
+                    mAdapter.setDatas(mCurrentModels);
+                }
                 mProgress.setVisibility(View.GONE);
 
                 return;
@@ -429,10 +486,14 @@ public class CustomerService extends Service {
             }
 
             getShowResultForAnalysis(mCurrentModels.size() > 0);
-            mAdapter.setDatas(mCurrentModels);
+            if (mAdapter != null) {
+                mAdapter.setDatas(mCurrentModels);
+            }
         } else {
             getShowResultForAnalysis(false);
-            mAdapter.setDatas(mCurrentModels);
+            if (mAdapter != null) {
+                mAdapter.setDatas(mCurrentModels);
+            }
         }
 
         mProgress.setVisibility(View.GONE);
@@ -539,9 +600,7 @@ public class CustomerService extends Service {
                     JSONObject object = new JSONObject(res);
                     mAnalysisResultModel = new AnalysisResultModel(object);
 
-                    Message message = new Message();
-                    message.arg1 = 2;
-                    handler.sendMessage(message);
+                    sendMessageForHandle(2, null);
 
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -3,7 +3,6 @@ package com.guangdian.aivideo.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 
 import com.guangdian.aivideo.utils.YiPlusUtilities;
 
