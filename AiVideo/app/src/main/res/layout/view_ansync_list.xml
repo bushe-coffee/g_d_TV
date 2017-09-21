@@ -1,0 +1,264 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/view_baidu_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_baidu_image"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:background="@android:color/darker_gray"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toEndOf="@id/view_baidu_image"
+            android:background="@drawable/baidu_bj"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/view_baidu_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/view_baidu_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:padding="8dp"
+                android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="12dp" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/view_dianbo_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_dianbo_image"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toEndOf="@id/view_dianbo_image"
+            android:background="@drawable/video_dianbo_bj"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/view_dianbo_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/view_dianbo_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:padding="8dp"
+                android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="12dp" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/view_weibo_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_weibo_image"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toEndOf="@id/view_weibo_image"
+            android:background="@drawable/weibo_bj"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/view_weibo_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/view_weibo_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:padding="8dp"
+                android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="12dp" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/view_douban_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_douban_image"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:background="@android:color/darker_gray"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toEndOf="@id/view_douban_image"
+            android:background="@drawable/douban_bj"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/view_douban_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="15dp" />
+
+            <TextView
+                android:id="@+id/view_douban_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:padding="8dp"
+                android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                android:textColor="@android:color/black"
+                android:textSize="12dp" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="144dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/view_taobao_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_taobao_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_margin="8dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+
+    </RelativeLayout>
+
+</LinearLayout>

@@ -8,8 +8,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -21,22 +19,20 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterViewFlipper;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.guangdian.aivideo.NetWorkCallback;
 import com.guangdian.aivideo.R;
 import com.guangdian.aivideo.adapters.FilperAdapter;
-import com.guangdian.aivideo.adapters.RecycleAdapter;
 import com.guangdian.aivideo.models.AnalysisResultModel;
 import com.guangdian.aivideo.models.CategoriesModel;
 import com.guangdian.aivideo.models.CommendListModel;
 import com.guangdian.aivideo.models.CommendModel;
 import com.guangdian.aivideo.models.FacesModel;
 import com.guangdian.aivideo.models.ScenesModel;
-import com.guangdian.aivideo.utils.KeyBoardCallback;
 import com.guangdian.aivideo.utils.NetWorkUtils;
 import com.guangdian.aivideo.utils.YiPlusUtilities;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,12 +58,10 @@ public class CustomerService extends Service {
     private WindowManager manager;
     private View mContainerView;
 
-    private ProgressBar mProgress;
     private String mBitmapBase64;
     private AdapterViewFlipper mFliper;
 
     private CommendListModel models;
-    private RecycleAdapter mAdapter;
     private AnalysisResultModel mAnalysisResultModel;
     private List<CommendModel> mCurrentModels = new ArrayList<>();
 
@@ -101,6 +95,7 @@ public class CustomerService extends Service {
                 showAnsyncList();
                 SelectRightResult();
             } else if (msg.arg1 == 3) {
+                // close the service
                 manager.removeViewImmediate(mContainerView);
             } else if (msg.arg1 == 4) {
                 Bundle bundle = msg.getData();
@@ -122,20 +117,36 @@ public class CustomerService extends Service {
         }
     };
 
-    private KeyBoardCallback adapterCallBack = new KeyBoardCallback() {
+    private OnKeyListener listKeyListener = new OnKeyListener() {
         @Override
-        public void onPressBack(int keyCode) {
-            Message message = new Message();
-            message.arg1 = 3;
-            handler.sendMessage(message);
-        }
+        public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+            if (YiPlusUtilities.DOUBLECLICK) {
+                synchronized (YiPlusUtilities.class) {
+                    YiPlusUtilities.DOUBLECLICK = false;
+                }
 
-        @Override
-        public void onPressEnter(int keyCode, Bundle bundle) {
-            Message message = new Message();
-            message.setData(bundle);
-            message.arg1 = 4;
-            handler.sendMessage(message);
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_BACK:
+                        sendMessageForHandle(3, null);
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                        Bundle bundle = new Bundle();
+                        bundle.putString("source", (String) view.getTag());
+                        sendMessageForHandle(4, bundle);
+                        break;
+                }
+            }
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (YiPlusUtilities.class) {
+                        YiPlusUtilities.DOUBLECLICK = true;
+                    }
+                }
+            }, 1000);
+
+            return false;
         }
     };
 
@@ -254,7 +265,7 @@ public class CustomerService extends Service {
         }
 
         WindowManager.LayoutParams params = setLayoutParams();
-        View view = getViewForWindowToList();
+        View view = getViewForWindowToList2();
         addViewToManager(view, params);
     }
 
@@ -311,8 +322,8 @@ public class CustomerService extends Service {
         Button background = view.findViewById(R.id.notifi_page_background);
         Button backButton = view.findViewById(R.id.notifi_page_back_button);
 
-        background.setOnKeyListener(keyListener);
-        backButton.setOnKeyListener(keyListener);
+        background.setOnKeyListener(detailKeyListener);
+        backButton.setOnKeyListener(detailKeyListener);
 
         title.setText(source);
         FilperAdapter adapter = new FilperAdapter(this);
@@ -322,7 +333,7 @@ public class CustomerService extends Service {
         return view;
     }
 
-    private OnKeyListener keyListener = new OnKeyListener() {
+    private OnKeyListener detailKeyListener = new OnKeyListener() {
         @Override
         public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
 
@@ -337,9 +348,9 @@ public class CustomerService extends Service {
                     if (keyCode == KeyEvent.KEYCODE_BACK) {
                         manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
                         WindowManager.LayoutParams params = setLayoutParams();
-                        View view2 = getViewForWindowToList();
-                        if (mAdapter != null) {
-                            mAdapter.setDatas(mCurrentModels);
+                        View view2 = getViewForWindowToList2();
+                        if (mCurrentModels != null) {
+                            setListDatas(mCurrentModels);
                         }
 
                         addViewToManager(view2, params);
@@ -362,9 +373,9 @@ public class CustomerService extends Service {
                         manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
 
                         WindowManager.LayoutParams params = setLayoutParams();
-                        View view2 = getViewForWindowToList();
-                        if (mAdapter != null) {
-                            mAdapter.setDatas(mCurrentModels);
+                        View view2 = getViewForWindowToList2();
+                        if (mCurrentModels != null) {
+                            setListDatas(mCurrentModels);
                         }
 
                         addViewToManager(view2, params);
@@ -386,35 +397,61 @@ public class CustomerService extends Service {
         }
     };
 
-    private View getViewForWindowToList() {
-        View view = LayoutInflater.from(this).inflate(R.layout.notification_layout, null, false);
+    private TextView baiduTitle;
+    private TextView baiduContent;
+    private ImageView baiduImage;
+    private Button baiduBg;
 
-        RecyclerView mRecycleView = view.findViewById(R.id.notifi_list);
-        mProgress = view.findViewById(R.id.notifi_load_list_progress);
+    private TextView dianboTitle;
+    private TextView dianboContent;
+    private ImageView dianboImage;
+    private Button dianboBg;
 
-        mRecycleView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new RecycleAdapter(this);
-        mRecycleView.setAdapter(mAdapter);
+    private TextView weiboTitle;
+    private TextView weiboContent;
+    private ImageView weiboImage;
+    private Button weiboBg;
 
-        mProgress.setVisibility(View.VISIBLE);
+    private TextView doubanTitle;
+    private TextView doubanContent;
+    private ImageView doubanImage;
+    private Button doubanBg;
 
-        // 网络不好的情况下 ，请求数据的时候 监听 返回键
-        mRecycleView.setOnKeyListener(new OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    Message message = new Message();
-                    message.arg1 = 3;
-                    handler.sendMessage(message);
-                    return true;
-                }
+    private ImageView taobaoImage;
+    private Button taobaoBg;
 
-                return false;
-            }
-        });
 
-        // 展示 数据的时候，监听button的返回键
-        mAdapter.setKeyBoardCallBack(adapterCallBack);
+    private View getViewForWindowToList2() {
+        View view = LayoutInflater.from(this).inflate(R.layout.view_ansync_list, null, false);
+        baiduTitle = view.findViewById(R.id.view_baidu_title);
+        baiduContent = view.findViewById(R.id.view_baidu_content);
+        baiduImage = view.findViewById(R.id.view_baidu_image);
+        baiduBg = view.findViewById(R.id.view_baidu_button);
+
+        dianboTitle = view.findViewById(R.id.view_dianbo_title);
+        dianboContent = view.findViewById(R.id.view_dianbo_content);
+        dianboImage = view.findViewById(R.id.view_dianbo_image);
+        dianboBg = view.findViewById(R.id.view_dianbo_button);
+
+        weiboTitle = view.findViewById(R.id.view_weibo_title);
+        weiboContent = view.findViewById(R.id.view_weibo_content);
+        weiboImage = view.findViewById(R.id.view_weibo_image);
+        weiboBg = view.findViewById(R.id.view_weibo_button);
+
+        doubanTitle = view.findViewById(R.id.view_douban_title);
+        doubanContent = view.findViewById(R.id.view_douban_content);
+        doubanImage = view.findViewById(R.id.view_douban_image);
+        doubanBg = view.findViewById(R.id.view_douban_button);
+
+        taobaoImage = view.findViewById(R.id.view_taobao_image);
+        taobaoBg = view.findViewById(R.id.view_taobao_button);
+
+        baiduBg.setOnKeyListener(listKeyListener);
+        dianboBg.setOnKeyListener(listKeyListener);
+        weiboBg.setOnKeyListener(listKeyListener);
+        doubanBg.setOnKeyListener(listKeyListener);
+        taobaoBg.setOnKeyListener(listKeyListener);
+
 
         return view;
     }
@@ -428,10 +465,9 @@ public class CustomerService extends Service {
             Map<String, List<String>> map = handleAnalysisResult();
             if (map == null || map.isEmpty()) {
                 getShowResultForAnalysis(false);
-                if (mAdapter != null) {
-                    mAdapter.setDatas(mCurrentModels);
+                if (mCurrentModels != null) {
+                    setListDatas(mCurrentModels);
                 }
-                mProgress.setVisibility(View.GONE);
 
                 return;
             }
@@ -486,17 +522,15 @@ public class CustomerService extends Service {
             }
 
             getShowResultForAnalysis(mCurrentModels.size() > 0);
-            if (mAdapter != null) {
-                mAdapter.setDatas(mCurrentModels);
+            if (mCurrentModels != null) {
+                setListDatas(mCurrentModels);
             }
         } else {
             getShowResultForAnalysis(false);
-            if (mAdapter != null) {
-                mAdapter.setDatas(mCurrentModels);
+            if (mCurrentModels != null) {
+                setListDatas(mCurrentModels);
             }
         }
-
-        mProgress.setVisibility(View.GONE);
     }
 
     private Map<String, List<String>> handleAnalysisResult() {
@@ -609,6 +643,37 @@ public class CustomerService extends Service {
         });
     }
 
+    private void setListDatas(List<CommendModel> listDatas) {
+        if (listDatas != null && listDatas.size() > 0) {
+            for (CommendModel model : listDatas) {
+                if (BAIDU.equals(model.getData_source())) {
+                    baiduTitle.setText(model.getDisplay_title());
+                    baiduContent.setText(model.getDisplay_brief());
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), baiduImage);
+                    baiduBg.setTag(model.getData_source());
+                }else if (VIDEO.equals(model.getData_source())) {
+                    dianboTitle.setText(model.getDisplay_title());
+                    dianboContent.setText(model.getDisplay_brief());
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), dianboImage);
+                    dianboBg.setTag(model.getData_source());
+                } else if (WEIBO.equals(model.getData_source())) {
+                    weiboTitle.setText(model.getDisplay_title());
+                    weiboContent.setText(model.getDisplay_brief());
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), weiboImage);
+                    weiboBg.setTag(model.getData_source());
+                } else if (DOUBAN.equals(model.getData_source())) {
+                    doubanTitle.setText(model.getDisplay_title());
+                    doubanContent.setText(model.getDisplay_brief());
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), doubanImage);
+                    doubanBg.setTag(model.getData_source());
+                } else if (TAOBAO.equals(model.getData_source())) {
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);
+                    taobaoBg.setTag(model.getData_source());
+                }
+            }
+        }
+    }
+
     private void clearData() {
         if (mCurrentModels != null) {
             mCurrentModels.clear();
@@ -620,5 +685,4 @@ public class CustomerService extends Service {
         mDouban = 0;
         mTaobao = 0;
     }
-
 }
