@@ -1,6 +1,5 @@
 package com.guangdian.aivideo;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -57,8 +56,42 @@ public class ContentActivity extends FragmentActivity implements View.OnClickLis
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
+        if (mListVideos == null || mListVideos.size() == 0) {
+            requestData();
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        switch (id) {
+            case R.id.content_page_last:
+                if (mCurrentPage > 1) {
+                    mCurrentPage--;
+                    mButtonNum.setText(mCurrentPage + "");
+                    mViewPaper.setCurrentItem(mCurrentPage - 1);
+                } else {
+                    Toast.makeText(this, "已是第一页", Toast.LENGTH_SHORT).show();
+                    Uri uri = Uri.parse("com.yiplus.result://authActivity");
+                }
+
+                break;
+            case R.id.content_page_next:
+                if (mCurrentPage < mTotalPages) {
+                    mCurrentPage++;
+                    mButtonNum.setText(mCurrentPage + "");
+                    mViewPaper.setCurrentItem(mCurrentPage - 1);
+                } else {
+                    Toast.makeText(this, "已是最后一页", Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+        }
+    }
+
+    private void requestData(){
         String time = (System.currentTimeMillis() / 1000) + "";
         String data = YiPlusUtilities.getPostParams(time);
         System.out.println("Yi Plus  onResume  ");
@@ -93,34 +126,6 @@ public class ContentActivity extends FragmentActivity implements View.OnClickLis
                 }
             }
         });
-    }
-
-    @Override
-    public void onClick(View view) {
-        int id = view.getId();
-        switch (id) {
-            case R.id.content_page_last:
-                if (mCurrentPage > 1) {
-                    mCurrentPage--;
-                    mButtonNum.setText(mCurrentPage + "");
-                    mViewPaper.setCurrentItem(mCurrentPage - 1);
-                } else {
-                    Toast.makeText(this, "已是第一页", Toast.LENGTH_SHORT).show();
-                    Uri uri = Uri.parse("com.yiplus.result://authActivity");
-                }
-
-                break;
-            case R.id.content_page_next:
-                if (mCurrentPage < mTotalPages) {
-                    mCurrentPage++;
-                    mButtonNum.setText(mCurrentPage + "");
-                    mViewPaper.setCurrentItem(mCurrentPage - 1);
-                } else {
-                    Toast.makeText(this, "已是最后一页", Toast.LENGTH_SHORT).show();
-                }
-
-                break;
-        }
     }
 
     private int getPagesTotal(int videoSize) {

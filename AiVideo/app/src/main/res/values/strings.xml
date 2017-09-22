@@ -2,4 +2,5 @@
     <string name="app_name">AiVideo</string>
     <string name="last_button">&#60;</string>
     <string name="next_button">&#62;</string>
+    <string name="default_text">Welcome to Yi + ...</string>
 </resources>

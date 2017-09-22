@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVideoView() {
         mVideoView.setVideoURI(Uri.parse(mUrl));
+        mVideoView.setMediaController(new MediaController(this));
 
         // 监听视频装载完成的事件
         mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

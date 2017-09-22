@@ -4,11 +4,12 @@
     android:background="@drawable/bj"
     android:orientation="vertical">
 
-    <ImageView
+    <ImageButton
         android:id="@+id/view_welcome_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:background="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/yiplus_logo" />
 

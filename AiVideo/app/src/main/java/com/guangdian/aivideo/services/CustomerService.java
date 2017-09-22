@@ -20,6 +20,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterViewFlipper;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -95,26 +96,32 @@ public class CustomerService extends Service {
             } else if (msg.arg1 == 2) {
                 // 识别 列表
                 showAnsyncList();
+                //  set right data
                 SelectRightResult();
             } else if (msg.arg1 == 3) {
                 // close the service
                 manager.removeViewImmediate(mContainerView);
+                mContainerView = null;
             } else if (msg.arg1 == 4) {
                 Bundle bundle = msg.getData();
-                String source = bundle.getString("source");
+                String source[] = bundle.getString("source").trim().split(" ");
+                String type = source[0];
+                String people = source[1];
+                Log.d("Yi+", "淘宝   " + type + "   " + people);
                 int arg2 = 0;
-                if (BAIDU.equals(source)) {
+                if (BAIDU.equals(type)) {
                     arg2 = 0;
-                } else if (VIDEO.equals(source)) {
+                } else if (VIDEO.equals(type)) {
                     arg2 = 1;
-                } else if (WEIBO.equals(source)) {
+                } else if (WEIBO.equals(type)) {
                     arg2 = 2;
-                } else if (DOUBAN.equals(source)) {
+                } else if (DOUBAN.equals(type)) {
                     arg2 = 3;
-                } else if (TAOBAO.equals(source)) {
+                } else if (TAOBAO.equals(type)) {
                     arg2 = 4;
                 }
-                updateManagetView(models.getModels(arg2), source);
+
+                updateManagetView(models.getModels(arg2), type, people);
             }
         }
     };
@@ -264,7 +271,7 @@ public class CustomerService extends Service {
     private View getWelcomeViewPage() {
         View view = LayoutInflater.from(this).inflate(R.layout.view_welcome_page, null, false);
 
-        ImageView image = view.findViewById(R.id.view_welcome_image);
+        ImageButton image = view.findViewById(R.id.view_welcome_image);
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.animation_scale_big);
         animation.setDuration(1000);
         animation.setRepeatMode(Animation.RESTART);
@@ -273,8 +280,11 @@ public class CustomerService extends Service {
 
         image.setOnKeyListener(new OnKeyListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                sendMessageForHandle(3, null);
+            public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    Log.d("Yi+", " key Board  " + keyCode);
+                    sendMessageForHandle(3, null);
+                }
                 return false;
             }
         });
@@ -296,6 +306,7 @@ public class CustomerService extends Service {
         if (manager != null) {
             if (mContainerView != null) {
                 manager.removeViewImmediate(mContainerView);
+                mContainerView = null;
             }
 
             view.startAnimation(AnimationUtils.loadAnimation(this, R.anim.animation_join));
@@ -327,18 +338,18 @@ public class CustomerService extends Service {
         return params;
     }
 
-    private void updateManagetView(List<CommendModel> datas, String source) {
+    private void updateManagetView(List<CommendModel> datas, String source, String people) {
         if (manager == null) {
             manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         }
 
         WindowManager.LayoutParams params = setLayoutParams();
-        View view = getViewForWindowToDetail(datas, source);
+        View view = getViewForWindowToDetail(datas, source, people);
 
         addViewToManager(view, params);
     }
 
-    private View getViewForWindowToDetail(List<CommendModel> datas, String source) {
+    private View getViewForWindowToDetail(List<CommendModel> datas, String source, String people) {
 
         View view = LayoutInflater.from(this).inflate(R.layout.notifi_detail_layout, null, false);
 
@@ -351,10 +362,35 @@ public class CustomerService extends Service {
         title.setText(source);
         FilperAdapter adapter = new FilperAdapter(this);
         if (TAOBAO.equals(source)) {
-            adapter.setDatas(datas, 4);
+            List<CommendModel> showTb = new ArrayList<>();
+            for (int j=0;j<datas.size(); ++j) {
+                CommendModel tb = datas.get(j);
+                if (people.equals(tb.getTag_name())) {
+                    showTb.add(tb);
+                }
+            }
+
+            Log.d("Yi+", "淘宝 商品  " + showTb.size());
+            adapter.setDatas(showTb, 4);
         } else {
+            for (int i =0; i < datas.size(); ++i) {
+                CommendModel model = datas.get(i);
+                if (people.equals(model.getDisplay_title())) {
+                    if (BAIDU.equals(source)) {
+                        datas.clear();
+                        datas.add(model);
+                    } else {
+                        datas.remove(model);
+                        datas.add(0, model);
+                    }
+
+                    break;
+                }
+            }
+
             adapter.setDatas(datas, 0);
         }
+
         mFliper.setAdapter(adapter);
 
         return view;
@@ -378,9 +414,11 @@ public class CustomerService extends Service {
                         View view2 = getViewForWindowToList2();
                         if (mCurrentModels != null) {
                             setListDatas(mCurrentModels);
+                            addViewToManager(view2, params);
+                        } else {
+                            sendMessageForHandle(3, null);
                         }
 
-                        addViewToManager(view2, params);
                         return true;
                     } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                         if (mFliper != null) {
@@ -487,22 +525,12 @@ public class CustomerService extends Service {
             }
 
             // match analysis result and all data collections
-            List<CommendModel> taobao = models.getModels(4);
-            for (CommendModel m : taobao) {
-                List<String> shang = map.get("商品");
-                for (int j = 0; shang != null && j < shang.size(); ++j) {
-                    if (shang.get(j).equals(m.getTag_name()) && mTaobao == 0) {
-                        mCurrentModels.add(m);
-                        mTaobao++;
-                    }
-                }
-            }
-
             List<String> people = map.get("人物");
             List<CommendModel> baidu = models.getModels(0);
             List<CommendModel> dianbo = models.getModels(1);
             List<CommendModel> weibo = models.getModels(2);
             List<CommendModel> douban = models.getModels(3);
+            List<CommendModel> taobao = models.getModels(4);
 
             // people 取第一个识别出来的 人
             String name = (people != null && people.size() > 0) ? people.get(0) : "";
@@ -512,18 +540,10 @@ public class CustomerService extends Service {
                     if (name.equals(m.getTag_name()) && mBaidu == 0) {
                         mCurrentModels.add(m);
                         mBaidu++;
+                        break;
                     }
                 }
 
-                List<CommendModel> weiboPerson = new ArrayList<>();
-                for (CommendModel m : weibo) {
-                    if (name.equals(m.getTag_name())) {
-                        weiboPerson.add(m);
-                    }
-                }
-
-                randomOneData(weiboPerson);
-                mWeibo++;
 
                 List<CommendModel> dianboPerson = new ArrayList<>();
                 for (CommendModel m : dianbo) {
@@ -531,9 +551,36 @@ public class CustomerService extends Service {
                         dianboPerson.add(m);
                     }
                 }
-                randomOneData(dianboPerson);
-                Log.d("Yi+", "点播视频 数量 " + dianboPerson.size());
-                mVideo++;
+                if (dianboPerson.size() > 0) {
+                    randomOneData(dianboPerson);
+                    Log.d("Yi+", "点播视频 数量 " + dianboPerson.size());
+                    mVideo++;
+                }
+
+
+                List<CommendModel> weiboPerson = new ArrayList<>();
+                for (CommendModel m : weibo) {
+                    if (name.equals(m.getTag_name())) {
+                        weiboPerson.add(m);
+                    }
+                }
+                if (weiboPerson.size() > 0) {
+                    randomOneData(weiboPerson);
+                    mWeibo++;
+                }
+
+
+                List<CommendModel> taobaoPerson = new ArrayList<>();
+                for (CommendModel m :taobao) {
+                    if (name.equals(m.getTag_name())) {
+                        taobaoPerson.add(m);
+                    }
+                }
+                if (taobaoPerson.size() > 0) {
+                    randomOneData(taobaoPerson);
+                    Log.d("Yi+", "淘宝 商品 数量 " + taobaoPerson.size());
+                    mTaobao++;
+                }
             }
 
             //豆瓣没有 数据 ，添加
@@ -666,23 +713,43 @@ public class CustomerService extends Service {
                     baiduTitle.setText(model.getDisplay_title());
                     baiduContent.setText(model.getDisplay_brief());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), baiduImage);
-                    baiduBg.setTag(model.getData_source());
+                    baiduBg.setTag(model.getData_source() + " " + model.getDisplay_title());
                 }else if (VIDEO.equals(model.getData_source())) {
                     dianboTitle.setText(model.getDisplay_title());
                     dianboContent.setText(model.getDisplay_brief());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), dianboImage);
-                    dianboBg.setTag(model.getData_source());
+                    dianboBg.setTag(model.getData_source() + " " + model.getDisplay_title());
                 } else if (WEIBO.equals(model.getData_source())) {
-                    weiboTitle.setText(model.getDisplay_title());
-                    weiboContent.setText(model.getDisplay_brief());
-                    weiboBg.setTag(model.getData_source());
+                    if (YiPlusUtilities.isStringNullOrEmpty(model.getDisplay_title()) || "null".equals(model.getDisplay_title())) {
+                        weiboTitle.setVisibility(View.GONE);
+                    } else {
+                        weiboTitle.setText(model.getDisplay_title());
+                    }
+
+                    if (YiPlusUtilities.isStringNullOrEmpty(model.getDisplay_brief()) || "null".equals(model.getDisplay_brief())) {
+                        weiboContent.setVisibility(View.GONE);
+                    } else {
+                        weiboContent.setText(model.getDisplay_brief());
+                    }
+//                    weiboBg.setTag(model.getData_source());
                 } else if (DOUBAN.equals(model.getData_source())) {
-                    doubanTitle.setText(model.getDisplay_title());
-                    doubanContent.setText(model.getDisplay_brief());
-                    doubanBg.setTag(model.getData_source());
+                    if (YiPlusUtilities.isStringNullOrEmpty(model.getDisplay_title()) || "null".equals(model.getDisplay_title())) {
+                        doubanTitle.setVisibility(View.GONE);
+                    } else {
+                        doubanTitle.setText(model.getDisplay_title());
+                    }
+
+                    if (YiPlusUtilities.isStringNullOrEmpty(model.getDisplay_brief()) || "null".equals(model.getDisplay_brief())) {
+                        doubanContent.setVisibility(View.GONE);
+                    } else {
+                        doubanContent.setText(model.getDisplay_brief());
+                    }
+
+//                    doubanBg.setTag(model.getData_source());
                 } else if (TAOBAO.equals(model.getData_source())) {
+                    Log.d("Yi+", "image URL  " + model.getDetailed_image_url());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);
-                    taobaoBg.setTag(model.getData_source());
+                    taobaoBg.setTag(model.getData_source() + " " + model.getTag_name());
                 }
             }
         }

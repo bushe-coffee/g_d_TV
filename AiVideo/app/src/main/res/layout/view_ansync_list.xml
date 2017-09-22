@@ -31,7 +31,7 @@
                 android:layout_height="128dp"
                 android:layout_gravity="center"
                 android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher" />
+                android:src="@drawable/default_img" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -45,7 +45,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:text="高亚麟"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="15dp" />
 
@@ -54,9 +54,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
+                    android:gravity="center"
                     android:maxLines="2"
                     android:padding="8dp"
-                    android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="12dp" />
 
@@ -91,7 +92,7 @@
                 android:layout_width="128dp"
                 android:layout_height="128dp"
                 android:scaleType="centerCrop"
-                android:src="@mipmap/ic_launcher" />
+                android:src="@drawable/default_img" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -105,7 +106,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:text="高亚麟"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="15dp" />
 
@@ -116,7 +117,8 @@
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:padding="8dp"
-                    android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                    android:gravity="center"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="12dp" />
 
@@ -175,7 +177,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:text="高亚麟"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="15dp" />
 
@@ -186,7 +188,8 @@
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:padding="8dp"
-                    android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                    android:gravity="center"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="12dp" />
 
@@ -234,7 +237,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@android:color/darker_gray"
                     android:scaleType="centerCrop"
                     android:src="@drawable/doupan_star" />
 
@@ -255,7 +257,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:text="高亚麟"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="15dp" />
 
@@ -266,7 +268,8 @@
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:padding="8dp"
-                    android:text="高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟高亚麟"
+                    android:gravity="center"
+                    android:text="@string/default_text"
                     android:textColor="@android:color/black"
                     android:textSize="12dp" />
 
@@ -296,7 +299,7 @@
             android:layout_centerVertical="true"
             android:layout_margin="6dp"
             android:scaleType="centerCrop"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@drawable/default_taobao" />
 
 
     </RelativeLayout>

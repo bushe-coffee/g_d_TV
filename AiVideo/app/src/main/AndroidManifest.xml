@@ -28,9 +28,8 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name="com.guangdian.aivideo.MainActivity"
+            android:name=".MainActivity"
             android:configChanges="keyboard|orientation|screenSize"
-            android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
 
