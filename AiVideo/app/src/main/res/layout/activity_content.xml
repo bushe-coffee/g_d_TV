@@ -153,7 +153,6 @@
         android:layout_width="wrap_content"
         android:scaleType="centerCrop"
         android:layout_gravity="center"
-        android:src="@drawable/luyi3"
         android:layout_height="wrap_content" />
 
 </LinearLayout>

@@ -49,7 +49,6 @@
 
         <service
             android:name=".services.CustomerService"
-            android:process=":yiplus_remote"
             android:exported="true" >
 
             <intent-filter>

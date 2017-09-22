@@ -157,7 +157,6 @@ public class YiPlusUtilities {
             Bitmap bitmap = null;
             try {
                 BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = false;
                 // 默认 是 ARGB_8888 每个 像素 是 4字节。 RGB_565 每个 像素 是 两字节
                 options.inPreferredConfig = Bitmap.Config.RGB_565;
                 bitmap = BitmapFactory.decodeFile(path, options);

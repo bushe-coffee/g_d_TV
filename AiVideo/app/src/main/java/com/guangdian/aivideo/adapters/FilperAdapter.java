@@ -19,13 +19,15 @@ public class FilperAdapter extends BaseAdapter {
 
     private Context mContext;
     private List<CommendModel> mDatas;
+    private int mType = 0;
 
     public FilperAdapter(Context context) {
         this.mContext = context;
     }
 
-    public void setDatas(List<CommendModel> datas) {
+    public void setDatas(List<CommendModel> datas, int type) {
         this.mDatas = datas;
+        this.mType = type;
         this.notifyDataSetChanged();
     }
 
@@ -48,7 +50,13 @@ public class FilperAdapter extends BaseAdapter {
     public View getView(int position, View parent, ViewGroup viewGroup) {
         ItemHolder holder;
         if (parent == null && mContext != null) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.item_filper_layout, viewGroup, false);
+            View view = null;
+            if (mType == 4) {
+                view = LayoutInflater.from(mContext).inflate(R.layout.item_filper_taobao, viewGroup, false);
+            } else {
+                view = LayoutInflater.from(mContext).inflate(R.layout.item_filper_layout, viewGroup, false);
+            }
+            
             holder = new ItemHolder(view);
             parent = view;
             parent.setTag(holder);
@@ -59,10 +67,21 @@ public class FilperAdapter extends BaseAdapter {
 
         CommendModel model = mDatas.get(position);
         if (model != null) {
-            holder.title.setText(model.getDisplay_title());
-            holder.content.setText(model.getDetailed_description());
-            if (model.getDetailed_image_url().length() > 8) {
-                ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.image);
+            if (mType != 4) {
+                holder.title.setText(model.getDisplay_title().trim());
+                holder.content.setText(model.getDetailed_description().trim());
+                if (model.getDetailed_image_url().length() > 8) {
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.image);
+                }
+            } else {
+                holder.taobaoComment1.setText(model.getComment1());
+                holder.taobaoComment2.setText(model.getComment2());
+                holder.taobaoComment3.setText(model.getComment3());
+                holder.taobaoTitle.setText(model.getDisplay_title());
+                holder.taobaoPrice.setText("￥" + model.getDetailed_description());
+                if (model.getDetailed_image_url().length() > 8) {
+                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), holder.taobaoImage);
+                }
             }
         }
 
@@ -74,10 +93,28 @@ public class FilperAdapter extends BaseAdapter {
         ImageView image;
         TextView content;
 
+        TextView taobaoTitle;
+        TextView taobaoPrice;
+        ImageView taobaoImage;
+        TextView taobaoComment1;
+        TextView taobaoComment2;
+        TextView taobaoComment3;
+
         ItemHolder(View view) {
-            title = view.findViewById(R.id.item_filper_name);
-            image = view.findViewById(R.id.item_filper_image);
-            content = view.findViewById(R.id.item_filper_content);
+            if (view != null) {
+                if (mType != 4) {
+                    title = view.findViewById(R.id.item_filper_name);
+                    image = view.findViewById(R.id.item_filper_image);
+                    content = view.findViewById(R.id.item_filper_content);
+                } else {
+                    taobaoTitle = view.findViewById(R.id.item_filper_taobao_name);
+                    taobaoPrice = view.findViewById(R.id.item_filper_taobao_price);
+                    taobaoImage = view.findViewById(R.id.item_filper_taobao_image);
+                    taobaoComment1 = view.findViewById(R.id.item_filper_taobao_comment1);
+                    taobaoComment2 = view.findViewById(R.id.item_filper_taobao_comment2);
+                    taobaoComment3 = view.findViewById(R.id.item_filper_taobao_comment3);
+                }
+            }
         }
     }
 }

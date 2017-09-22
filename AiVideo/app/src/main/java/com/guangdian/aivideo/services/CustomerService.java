@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterViewFlipper;
 import android.widget.Button;
@@ -254,9 +256,30 @@ public class CustomerService extends Service {
         }
 
         WindowManager.LayoutParams params = setLayoutParams();
-        ImageView view = new ImageView(this);
-        view.setImageResource(R.drawable.bj);
+        params.height = WindowManager.LayoutParams.MATCH_PARENT;
+        View view = getWelcomeViewPage();
         addViewToManager(view, params);
+    }
+
+    private View getWelcomeViewPage() {
+        View view = LayoutInflater.from(this).inflate(R.layout.view_welcome_page, null, false);
+
+        ImageView image = view.findViewById(R.id.view_welcome_image);
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.animation_scale_big);
+        animation.setDuration(1000);
+        animation.setRepeatMode(Animation.RESTART);
+        animation.setRepeatCount(5);
+        image.startAnimation(animation);
+
+        image.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                sendMessageForHandle(3, null);
+                return false;
+            }
+        });
+
+        return view;
     }
 
     private void showAnsyncList() {
@@ -284,7 +307,9 @@ public class CustomerService extends Service {
     private WindowManager.LayoutParams setLayoutParams() {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
 
-        params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+        DisplayMetrics metrics = new DisplayMetrics();
+        manager.getDefaultDisplay().getMetrics(metrics);
+        params.width = metrics.widthPixels / 3;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
 
 //        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT | WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
@@ -303,10 +328,10 @@ public class CustomerService extends Service {
     }
 
     private void updateManagetView(List<CommendModel> datas, String source) {
-
         if (manager == null) {
             manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         }
+
         WindowManager.LayoutParams params = setLayoutParams();
         View view = getViewForWindowToDetail(datas, source);
 
@@ -320,14 +345,16 @@ public class CustomerService extends Service {
         TextView title = view.findViewById(R.id.notifi_page_title);
         mFliper = view.findViewById(R.id.notifi_page_content);
         Button background = view.findViewById(R.id.notifi_page_background);
-        Button backButton = view.findViewById(R.id.notifi_page_back_button);
 
         background.setOnKeyListener(detailKeyListener);
-        backButton.setOnKeyListener(detailKeyListener);
 
         title.setText(source);
         FilperAdapter adapter = new FilperAdapter(this);
-        adapter.setDatas(datas);
+        if (TAOBAO.equals(source)) {
+            adapter.setDatas(datas, 4);
+        } else {
+            adapter.setDatas(datas, 0);
+        }
         mFliper.setAdapter(adapter);
 
         return view;
@@ -368,19 +395,6 @@ public class CustomerService extends Service {
                     } else if ((keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
                         return true;
                     }
-                } else if (id == R.id.notifi_page_back_button) {
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                        manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-
-                        WindowManager.LayoutParams params = setLayoutParams();
-                        View view2 = getViewForWindowToList2();
-                        if (mCurrentModels != null) {
-                            setListDatas(mCurrentModels);
-                        }
-
-                        addViewToManager(view2, params);
-                        return false;
-                    }
                 }
             }
 
@@ -409,12 +423,12 @@ public class CustomerService extends Service {
 
     private TextView weiboTitle;
     private TextView weiboContent;
-    private ImageView weiboImage;
+//    private ImageView weiboImage;
     private Button weiboBg;
 
     private TextView doubanTitle;
     private TextView doubanContent;
-    private ImageView doubanImage;
+//    private ImageView doubanImage;
     private Button doubanBg;
 
     private ImageView taobaoImage;
@@ -435,12 +449,12 @@ public class CustomerService extends Service {
 
         weiboTitle = view.findViewById(R.id.view_weibo_title);
         weiboContent = view.findViewById(R.id.view_weibo_content);
-        weiboImage = view.findViewById(R.id.view_weibo_image);
+//        weiboImage = view.findViewById(R.id.view_weibo_image);
         weiboBg = view.findViewById(R.id.view_weibo_button);
 
         doubanTitle = view.findViewById(R.id.view_douban_title);
         doubanContent = view.findViewById(R.id.view_douban_content);
-        doubanImage = view.findViewById(R.id.view_douban_image);
+//        doubanImage = view.findViewById(R.id.view_douban_image);
         doubanBg = view.findViewById(R.id.view_douban_button);
 
         taobaoImage = view.findViewById(R.id.view_taobao_image);
@@ -448,8 +462,8 @@ public class CustomerService extends Service {
 
         baiduBg.setOnKeyListener(listKeyListener);
         dianboBg.setOnKeyListener(listKeyListener);
-        weiboBg.setOnKeyListener(listKeyListener);
-        doubanBg.setOnKeyListener(listKeyListener);
+//        weiboBg.setOnKeyListener(listKeyListener);
+//        doubanBg.setOnKeyListener(listKeyListener);
         taobaoBg.setOnKeyListener(listKeyListener);
 
 
@@ -486,11 +500,13 @@ public class CustomerService extends Service {
 
             List<String> people = map.get("人物");
             List<CommendModel> baidu = models.getModels(0);
+            List<CommendModel> dianbo = models.getModels(1);
             List<CommendModel> weibo = models.getModels(2);
             List<CommendModel> douban = models.getModels(3);
-            List<CommendModel> dianbo = models.getModels(1);
+
             // people 取第一个识别出来的 人
             String name = (people != null && people.size() > 0) ? people.get(0) : "";
+            Log.d("Yi+", "识别出来的 " + name);
             if (!YiPlusUtilities.isStringNullOrEmpty(name)) {
                 for (CommendModel m : baidu) {
                     if (name.equals(m.getTag_name()) && mBaidu == 0) {
@@ -499,28 +515,28 @@ public class CustomerService extends Service {
                     }
                 }
 
+                List<CommendModel> weiboPerson = new ArrayList<>();
                 for (CommendModel m : weibo) {
-                    if (name.equals(m.getTag_name()) && mWeibo == 0) {
-                        mCurrentModels.add(m);
-                        mWeibo++;
+                    if (name.equals(m.getTag_name())) {
+                        weiboPerson.add(m);
                     }
                 }
 
-                for (CommendModel m : douban) {
-                    if (name.equals(m.getTag_name()) && mDouban == 0) {
-                        mCurrentModels.add(m);
-                        mDouban++;
-                    }
-                }
+                randomOneData(weiboPerson);
+                mWeibo++;
 
+                List<CommendModel> dianboPerson = new ArrayList<>();
                 for (CommendModel m : dianbo) {
-                    if (name.equals(m.getTag_name()) && mVideo == 0) {
-                        mCurrentModels.add(m);
-                        mVideo++;
+                    if (name.equals(m.getTag_name())) {
+                        dianboPerson.add(m);
                     }
                 }
+                randomOneData(dianboPerson);
+                Log.d("Yi+", "点播视频 数量 " + dianboPerson.size());
+                mVideo++;
             }
 
+            //豆瓣没有 数据 ，添加
             getShowResultForAnalysis(mCurrentModels.size() > 0);
             if (mCurrentModels != null) {
                 setListDatas(mCurrentModels);
@@ -606,7 +622,7 @@ public class CustomerService extends Service {
     private void randomOneData(List<CommendModel> datas) {
         Random baiduR = new Random();
         if (datas != null && datas.size() > 0) {
-            int random = baiduR.nextInt(datas.size() - 1);
+            int random = baiduR.nextInt(datas.size());
             mCurrentModels.add(datas.get(random));
         }
 
@@ -659,12 +675,10 @@ public class CustomerService extends Service {
                 } else if (WEIBO.equals(model.getData_source())) {
                     weiboTitle.setText(model.getDisplay_title());
                     weiboContent.setText(model.getDisplay_brief());
-                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), weiboImage);
                     weiboBg.setTag(model.getData_source());
                 } else if (DOUBAN.equals(model.getData_source())) {
                     doubanTitle.setText(model.getDisplay_title());
                     doubanContent.setText(model.getDisplay_brief());
-                    ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), doubanImage);
                     doubanBg.setTag(model.getData_source());
                 } else if (TAOBAO.equals(model.getData_source())) {
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);

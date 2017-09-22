@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bj"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -17,19 +18,8 @@
             android:focusableInTouchMode="false"
             android:gravity="center"
             android:text="@string/app_name"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="15dp" />
-
-        <Button
-            android:id="@+id/notifi_page_back_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentLeft="true"
-            android:background="@drawable/white_background_button"
-            android:padding="4dp"
-            android:text="@string/last_button"
-            android:textColor="@android:color/black"
-            android:textSize="15dp" />
+            android:textColor="@android:color/white"
+            android:textSize="18dp" />
 
     </RelativeLayout>
 
@@ -51,10 +41,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:autoStart="false"
-            android:background="@android:color/black"
             android:focusable="false"
             android:focusableInTouchMode="false"
-            android:layout_margin="8dp" />
+            android:layout_margin="6dp" />
 
     </RelativeLayout>
 

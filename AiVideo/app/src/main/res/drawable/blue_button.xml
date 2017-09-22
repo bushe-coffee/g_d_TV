@@ -2,15 +2,13 @@
 
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <corners android:radius="8dp" />
-            <solid android:color="@android:color/holo_blue_dark" />
+            <solid android:color="#34E5FE" />
         </shape>
     </item>
 
     <item android:state_focused="false">
         <shape android:shape="rectangle">
-            <corners android:radius="8dp" />
-            <solid android:color="@android:color/black" />
+            <solid android:color="@android:color/transparent" />
         </shape>
     </item>
 
