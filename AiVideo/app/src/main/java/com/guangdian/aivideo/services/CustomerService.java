@@ -82,6 +82,7 @@ public class CustomerService extends Service {
 
     private static boolean PREPARE_ALL_DATA = false;
     private static boolean PREPARE_IMAGE_BASE64 = false;
+    private static boolean IS_SHOWING_WINDOW = false;
 
     private Handler handler = new Handler() {
         @Override
@@ -101,6 +102,7 @@ public class CustomerService extends Service {
             } else if (msg.arg1 == 3) {
                 // close the service
                 manager.removeViewImmediate(mContainerView);
+                IS_SHOWING_WINDOW = false;
                 mContainerView = null;
             } else if (msg.arg1 == 4) {
                 Bundle bundle = msg.getData();
@@ -177,9 +179,7 @@ public class CustomerService extends Service {
         super.onDestroy();
         PREPARE_ALL_DATA = false;
         PREPARE_IMAGE_BASE64 = false;
-        Intent intent = new Intent();
-        intent.setAction("com.yiplus.awake_server");
-        sendBroadcast(intent);
+        IS_SHOWING_WINDOW = false;
     }
 
     @Override
@@ -188,12 +188,15 @@ public class CustomerService extends Service {
             return START_STICKY;
         }
 
-        mContainerView = null;
-        PREPARE_ALL_DATA = false;
-        PREPARE_IMAGE_BASE64 = false;
-        prepareAllData();
-        showYiPlusLogo();
-        screenCapAndRequest();
+        if (! IS_SHOWING_WINDOW) {
+            mContainerView = null;
+            PREPARE_ALL_DATA = false;
+            PREPARE_IMAGE_BASE64 = false;
+            IS_SHOWING_WINDOW = true;
+            prepareAllData();
+            showYiPlusLogo();
+            screenCapAndRequest();
+        }
 
         return START_STICKY;
     }
