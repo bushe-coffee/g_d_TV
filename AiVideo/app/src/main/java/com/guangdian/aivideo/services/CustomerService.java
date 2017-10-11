@@ -77,6 +77,7 @@ public class CustomerService extends Service {
     private int mVideo = 0;
     private int mDouban = 0;
     private int mTaobao = 0;
+    private boolean hasFace = false;
 
     private static final String BAIDU = "百度百科";
     private static final String WEIBO = "微博";
@@ -98,6 +99,7 @@ public class CustomerService extends Service {
                 if (!YiPlusUtilities.isStringNullOrEmpty(mBitmapBase64) && PREPARE_ALL_DATA && PREPARE_IMAGE_BASE64) {
                     PREPARE_IMAGE_BASE64 = false;
                     // 任何 图片都会有一个结果。只是返回的是不是 空
+                    Product_Face = 0;
                     analysisImage();
                 }
             } else if (msg.arg1 == 2) {
@@ -582,6 +584,7 @@ public class CustomerService extends Service {
             String name = (people != null && people.size() > 0) ? people.get(0) : "";
             Log.d("Yi+", "识别出来的 " + name);
             if (!YiPlusUtilities.isStringNullOrEmpty(name)) {
+                hasFace = true;
                 for (CommendModel m : baidu) {
                     if (name.equals(m.getTag_name()) && mBaidu == 0) {
                         mCurrentModels.add(m);
@@ -824,7 +827,7 @@ public class CustomerService extends Service {
                     }
 
 //                    doubanBg.setTag(model.getData_source());
-                } else if (TAOBAO.equals(model.getData_source()) && product_list.size() == 0) {
+                } else if (TAOBAO.equals(model.getData_source()) && hasFace) {
                     Log.d("Yi+", "image URL  " + model.getDetailed_image_url());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);
                     taobaoBg.setTag(model.getData_source() + " " + model.getTag_name());
@@ -832,7 +835,7 @@ public class CustomerService extends Service {
             }
         }
 
-        if (product_list != null && product_list.size() > 0) {
+        if (product_list != null && product_list.size() > 0 && !hasFace) {
             ImageLoader.getInstance().displayImage(product_list.get(0).getProduct_image(), taobaoImage);
             taobaoBg.setTag("");
         }

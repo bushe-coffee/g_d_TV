@@ -8,10 +8,11 @@
         android:id="@+id/view_welcome_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:background="@null"
         android:scaleType="centerCrop"
-        android:src="@drawable/yiplus_logo" />
+        android:src="@drawable/yiplus_logo"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
 
     <TextView

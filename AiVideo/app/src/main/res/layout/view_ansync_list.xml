@@ -23,8 +23,9 @@
             android:layout_height="match_parent"
             android:layout_centerVertical="true"
             android:layout_margin="6dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_taobao" />
+            android:scaleType="fitCenter"
+            android:background="#000000"
+            android:src="@drawable/product_defult" />
 
 
     </RelativeLayout>

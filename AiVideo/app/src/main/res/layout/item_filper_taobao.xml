@@ -155,7 +155,7 @@
         android:layout_width="256dp"
         android:layout_height="56dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/blue_background_button"
+        android:background="@drawable/detail_buy_button"
         android:gravity="center">
 
         <TextView
@@ -165,7 +165,7 @@
             android:drawablePadding="8dp"
             android:gravity="center"
             android:text="立即购买"
-            android:textColor="#1B2B3C"
+            android:textColor="#FFFFFF"
             android:textSize="22dp" />
 
     </RelativeLayout>

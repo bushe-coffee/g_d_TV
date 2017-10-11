@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bj"
+    android:background="@android:color/transparent"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/blue_button"
-            android:layout_margin="4dp" />
+            android:layout_margin="5dp" />
 
         <AdapterViewFlipper
             android:id="@+id/notifi_page_content"
