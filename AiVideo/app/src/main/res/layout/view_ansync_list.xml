@@ -10,6 +10,31 @@
         android:orientation="vertical">
 
         <Button
+            android:id="@+id/view_taobao_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_margin="4dp"
+            android:background="@drawable/blue_button" />
+
+        <ImageView
+            android:id="@+id/view_taobao_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_margin="6dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_taobao" />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:orientation="vertical">
+
+        <Button
             android:id="@+id/view_baidu_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -276,31 +301,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="140dp"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/view_taobao_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:layout_margin="4dp"
-            android:background="@drawable/blue_button" />
-
-        <ImageView
-            android:id="@+id/view_taobao_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:layout_margin="6dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_taobao" />
-
 
     </RelativeLayout>
 

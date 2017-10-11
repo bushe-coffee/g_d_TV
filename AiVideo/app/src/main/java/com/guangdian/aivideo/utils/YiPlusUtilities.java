@@ -26,6 +26,8 @@ public class YiPlusUtilities {
     public static String LIST_URL = "http://47.94.37.237/api/video/all";
     public static String VIDEO_COMMEND_URL = "http://47.94.37.237/api/recommand";
     public static String ANALYSIS_IMAGE_URL = "http://47.94.37.237/api/analysis";
+    public static String PRODUCT_URL = "http://47.94.37.237/api/product/recommand";
+
     private static String ACCESS_KEY = "9aPx3h888D0rWcX20HSayvHqxlvxHbjn";
     private static String SECRET_KEY = "CNkx6KJYxTtEr6WF3ChOEKZIl4WMWG4n0i3Hvo8Ov4o";
 

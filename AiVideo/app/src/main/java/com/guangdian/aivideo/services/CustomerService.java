@@ -27,11 +27,14 @@ import android.widget.TextView;
 import com.guangdian.aivideo.NetWorkCallback;
 import com.guangdian.aivideo.R;
 import com.guangdian.aivideo.adapters.FilperAdapter;
+import com.guangdian.aivideo.adapters.ProductFilperAdapter;
 import com.guangdian.aivideo.models.AnalysisResultModel;
 import com.guangdian.aivideo.models.CategoriesModel;
 import com.guangdian.aivideo.models.CommendListModel;
 import com.guangdian.aivideo.models.CommendModel;
 import com.guangdian.aivideo.models.FacesModel;
+import com.guangdian.aivideo.models.ProductModel;
+import com.guangdian.aivideo.models.ProductResultModels;
 import com.guangdian.aivideo.models.ScenesModel;
 import com.guangdian.aivideo.utils.NetWorkUtils;
 import com.guangdian.aivideo.utils.YiPlusUtilities;
@@ -67,6 +70,7 @@ public class CustomerService extends Service {
     private CommendListModel models;
     private AnalysisResultModel mAnalysisResultModel;
     private List<CommendModel> mCurrentModels = new ArrayList<>();
+    private List<ProductModel> product_list = new ArrayList<>();
 
     private int mBaidu = 0;
     private int mWeibo = 0;
@@ -83,6 +87,8 @@ public class CustomerService extends Service {
     private static boolean PREPARE_ALL_DATA = false;
     private static boolean PREPARE_IMAGE_BASE64 = false;
     private static boolean IS_SHOWING_WINDOW = false;
+    private static int Product_Face = 0; // product and face back ansysics result
+    private final Object synchronizedObject = new Object();
 
     private Handler handler = new Handler() {
         @Override
@@ -95,7 +101,7 @@ public class CustomerService extends Service {
                     analysisImage();
                 }
             } else if (msg.arg1 == 2) {
-                // 识别 列表
+                // show 识别 列表
                 showAnsyncList();
                 //  set right data
                 SelectRightResult();
@@ -106,24 +112,31 @@ public class CustomerService extends Service {
                 mContainerView = null;
             } else if (msg.arg1 == 4) {
                 Bundle bundle = msg.getData();
-                String source[] = bundle.getString("source").trim().split(" ");
-                String type = source[0];
-                String people = source[1];
-                Log.d("Yi+", "淘宝   " + type + "   " + people);
-                int arg2 = 0;
-                if (BAIDU.equals(type)) {
-                    arg2 = 0;
-                } else if (VIDEO.equals(type)) {
-                    arg2 = 1;
-                } else if (WEIBO.equals(type)) {
-                    arg2 = 2;
-                } else if (DOUBAN.equals(type)) {
-                    arg2 = 3;
-                } else if (TAOBAO.equals(type)) {
-                    arg2 = 4;
-                }
+                String tag = bundle.getString("source").trim();
+                if (!YiPlusUtilities.isStringNullOrEmpty(tag)) {
+                    String source[] = tag.split(" ");
+                    String type = source[0];
+                    String people = source[1];
+                    Log.d("Yi+", "淘宝   " + type + "   " + people);
+                    int arg2 = 0;
+                    if (BAIDU.equals(type)) {
+                        arg2 = 0;
+                    } else if (VIDEO.equals(type)) {
+                        arg2 = 1;
+                    } else if (WEIBO.equals(type)) {
+                        arg2 = 2;
+                    } else if (DOUBAN.equals(type)) {
+                        arg2 = 3;
+                    } else if (TAOBAO.equals(type)) {
+                        arg2 = 4;
+                    }
 
-                updateManagetView(models.getModels(arg2), type, people);
+                    // show detail view
+                    updateManagetView(models.getModels(arg2), type, people);
+                } else {
+                    // click product
+                    showProductDetailView();
+                }
             }
         }
     };
@@ -132,7 +145,7 @@ public class CustomerService extends Service {
         @Override
         public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
             if (YiPlusUtilities.DOUBLECLICK) {
-                synchronized (YiPlusUtilities.class) {
+                synchronized (synchronizedObject) {
                     YiPlusUtilities.DOUBLECLICK = false;
                 }
 
@@ -151,7 +164,7 @@ public class CustomerService extends Service {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    synchronized (YiPlusUtilities.class) {
+                    synchronized (synchronizedObject) {
                         YiPlusUtilities.DOUBLECLICK = true;
                     }
                 }
@@ -350,6 +363,36 @@ public class CustomerService extends Service {
         View view = getViewForWindowToDetail(datas, source, people);
 
         addViewToManager(view, params);
+    }
+
+    private void showProductDetailView() {
+        if (manager == null) {
+            manager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        }
+
+        WindowManager.LayoutParams params = setLayoutParams();
+        View view = getViewForWindowToProduct();
+
+        addViewToManager(view, params);
+    }
+
+    private View getViewForWindowToProduct() {
+        View view = LayoutInflater.from(this).inflate(R.layout.notifi_detail_layout, null, false);
+
+        TextView title = view.findViewById(R.id.notifi_page_title);
+        mFliper = view.findViewById(R.id.notifi_page_content);
+        Button background = view.findViewById(R.id.notifi_page_background);
+
+        background.setOnKeyListener(detailKeyListener);
+
+        title.setText("商品");
+
+        ProductFilperAdapter adapter = new ProductFilperAdapter(this);
+        adapter.setDatas(product_list);
+
+        mFliper.setAdapter(adapter);
+
+        return view;
     }
 
     private View getViewForWindowToDetail(List<CommendModel> datas, String source, String people) {
@@ -691,6 +734,7 @@ public class CustomerService extends Service {
             e.printStackTrace();
         }
 
+        // analysis image for getting face
         NetWorkUtils.post(YiPlusUtilities.ANALYSIS_IMAGE_URL, param, null, new NetWorkCallback() {
             @Override
             public void onServerResponse(Bundle result) {
@@ -700,7 +744,38 @@ public class CustomerService extends Service {
                     JSONObject object = new JSONObject(res);
                     mAnalysisResultModel = new AnalysisResultModel(object);
 
-                    sendMessageForHandle(2, null);
+                    synchronized (synchronizedObject) {
+                        Product_Face++;
+                        if (Product_Face == 2) {
+                            sendMessageForHandle(2, null);
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // analysis image for getting product
+        NetWorkUtils.post(YiPlusUtilities.PRODUCT_URL, param, null, new NetWorkCallback() {
+            @Override
+            public void onServerResponse(Bundle result) {
+                try {
+                    String res = (String) result.get("result");
+                    System.out.println("majie  Product_result   " + res);
+                    JSONObject array = new JSONObject(res);
+
+                    ProductResultModels productList = new ProductResultModels(array);
+                    product_list.clear();
+                    product_list = productList.getProductList();
+
+                    synchronized (synchronizedObject) {
+                        Product_Face++;
+                        if (Product_Face == 2) {
+                            sendMessageForHandle(2, null);
+                        }
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -749,12 +824,17 @@ public class CustomerService extends Service {
                     }
 
 //                    doubanBg.setTag(model.getData_source());
-                } else if (TAOBAO.equals(model.getData_source())) {
+                } else if (TAOBAO.equals(model.getData_source()) && product_list.size() == 0) {
                     Log.d("Yi+", "image URL  " + model.getDetailed_image_url());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);
                     taobaoBg.setTag(model.getData_source() + " " + model.getTag_name());
                 }
             }
+        }
+
+        if (product_list != null && product_list.size() > 0) {
+            ImageLoader.getInstance().displayImage(product_list.get(0).getProduct_image(), taobaoImage);
+            taobaoBg.setTag("");
         }
     }
 
