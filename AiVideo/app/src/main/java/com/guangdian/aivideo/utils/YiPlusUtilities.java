@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.List;
 
 public class YiPlusUtilities {
 
@@ -35,6 +36,10 @@ public class YiPlusUtilities {
 
     public static boolean isStringNullOrEmpty(String s) {
         return s == null || s.length() == 0;
+    }
+
+    public static boolean isListNullOrEmpty(List s) {
+        return s == null || s.size() == 0;
     }
 
     @Nullable

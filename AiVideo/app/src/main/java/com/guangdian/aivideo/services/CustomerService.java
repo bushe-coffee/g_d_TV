@@ -351,7 +351,8 @@ public class CustomerService extends Service {
                 WindowManager.LayoutParams.FLAG_SECURE;
 
         params.gravity = Gravity.RIGHT | Gravity.TOP;
-        params.dimAmount = 0.4f;
+        params.dimAmount = 0.45f;
+        params.alpha = 0.9f;
 
         return params;
     }
@@ -583,6 +584,7 @@ public class CustomerService extends Service {
             // people 取第一个识别出来的 人
             String name = (people != null && people.size() > 0) ? people.get(0) : "";
             Log.d("Yi+", "识别出来的 " + name);
+            hasFace = false;
             if (!YiPlusUtilities.isStringNullOrEmpty(name)) {
                 hasFace = true;
                 for (CommendModel m : baidu) {
@@ -827,7 +829,8 @@ public class CustomerService extends Service {
                     }
 
 //                    doubanBg.setTag(model.getData_source());
-                } else if (TAOBAO.equals(model.getData_source()) && hasFace) {
+                } else if ((TAOBAO.equals(model.getData_source()) && hasFace)
+                        || (YiPlusUtilities.isListNullOrEmpty(product_list))) {
                     Log.d("Yi+", "image URL  " + model.getDetailed_image_url());
                     ImageLoader.getInstance().displayImage(model.getDetailed_image_url(), taobaoImage);
                     taobaoBg.setTag(model.getData_source() + " " + model.getTag_name());
